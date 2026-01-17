@@ -10,6 +10,7 @@ from .serializers import (
     CustomUserSerializer, UserRegistrationSerializer, 
     LoginSerializer, ApprovalRequestSerializer
 )
+from .utils import face_service
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -40,6 +41,58 @@ def login(request):
             'user': CustomUserSerializer(user).data
         })
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def face_login(request):
+    """Unified login endpoint: Username + Password + Face"""
+    username = request.data.get('username')
+    password = request.data.get('password')
+    face_image = request.FILES.get('image')
+    
+    if not username or not password or not face_image:
+        return Response({'error': 'Username, password, and face image are required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # 1. Verify credentials first
+    user = authenticate(username=username, password=password)
+    
+    if not user:
+        return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+    if not user.is_approved:
+        return Response({'error': 'Your account is pending approval'}, status=status.HTTP_403_FORBIDDEN)
+        
+    # 2. Get profile and face token
+    try:
+        profile = user.profile
+        if not profile.face_token:
+            return Response({'error': 'Face recognition not set up for this user'}, status=status.HTTP_400_BAD_REQUEST)
+    except UserProfile.DoesNotExist:
+        return Response({'error': 'User profile not found'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    # 3. Verify face
+    # Reset file pointer
+    face_image.seek(0)
+    result = face_service.verify_face(face_image, profile.face_token)
+    
+    if 'error' in result:
+        return Response({'error': result['error']}, status=status.HTTP_400_BAD_REQUEST)
+        
+    if result.get('verified'):
+        # Login successful
+        auth_login(request, user)
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': CustomUserSerializer(user).data,
+            'confidence': result.get('confidence')
+        })
+    else:
+        return Response({
+            'error': 'Face verification failed. Please try again with a clear photo.',
+            'confidence': result.get('confidence')
+        }, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

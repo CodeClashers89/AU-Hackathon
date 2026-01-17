@@ -168,3 +168,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Authentication URLs
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
+
+# Face++ API Credentials
+FACEPP_API_KEY = 'auD3kLcZ0Zx8j7O8w9EbIRFb2LnnEolv'
+FACEPP_API_SECRET = 'qAS2J5D05RCrMiePco79X_j4uSkS7Mqq'
+FACEPP_API_URL = 'https://api-us.faceplusplus.com/facepp/v3'

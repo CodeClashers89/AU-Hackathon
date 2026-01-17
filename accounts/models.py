@@ -34,6 +34,7 @@ class UserProfile(models.Model):
     city = models.CharField(max_length=100, blank=True)
     state = models.CharField(max_length=100, blank=True)
     pincode = models.CharField(max_length=10, blank=True)
+    face_token = models.CharField(max_length=255, blank=True, null=True)
     
     def __str__(self):
         return f"Profile of {self.user.username}"

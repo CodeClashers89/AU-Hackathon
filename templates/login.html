@@ -192,6 +192,65 @@
                 padding: 2.5rem;
             }
         }
+
+        /* Tabs */
+        .login-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab-btn {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            font-weight: 700;
+            color: #94a3b8;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: var(--gov-blue);
+            border-bottom-color: var(--gov-blue);
+        }
+
+        .camera-box {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            min-height: 240px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        .camera-status {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            font-size: 0.8rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px;
+        }
     </style>
 </head>
 
@@ -208,7 +267,7 @@
 
             <div id="error-message" class="error-message"></div>
 
-            <form id="login-form">
+            <form id="unified-login-form">
                 <div class="form-group">
                     <label>Username / ID</label>
                     <input type="text" id="username" placeholder="Enter your username" required>
@@ -219,7 +278,26 @@
                     <input type="password" id="password" placeholder="••••••••" required>
                 </div>
 
-                <button type="submit" class="btn-ultra">Connect to System</button>
+                <div class="form-group">
+                    <label>Identity Verification</label>
+                    <div class="camera-box">
+                        <video id="video" autoplay playsinline
+                            style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
+                        <canvas id="canvas" style="display: none;"></canvas>
+                        <div id="camera-placeholder"
+                            style="color: white; cursor: pointer; text-align: center; width: 100%; padding: 2rem;"
+                            onclick="startCamera()">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📷</div>
+                            <p>Click to Enable Camera</p>
+                        </div>
+                        <div class="camera-overlay" id="camera-overlay" style="display: none;"></div>
+                        <div class="camera-status" id="camera-status" style="display: none;">Ready to Scan</div>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #64748b; margin-top: 0.5rem;">Face verification required for
+                        login.</p>
+                </div>
+
+                <button type="submit" class="btn-ultra" id="login-btn">Secure Login</button>
             </form>
 
             <div class="login-footer">
@@ -238,55 +316,133 @@
 
     <script src="{% static 'js/main.js' %}"></script>
     <script>
+        let stream = null;
+
+
+        async function startCamera() {
+            const video = document.getElementById('video');
+            const placeholder = document.getElementById('camera-placeholder');
+            const overlay = document.getElementById('camera-overlay');
+            const status = document.getElementById('camera-status');
+            const errorDiv = document.getElementById('error-message');
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                placeholder.style.display = 'none';
+                overlay.style.display = 'block';
+                status.style.display = 'block';
+                errorDiv.style.display = 'none';
+            } catch (err) {
+                console.error("Camera Error:", err);
+                errorDiv.textContent = "Could not access camera. Please allow camera permissions.";
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                document.getElementById('video').style.display = 'none';
+                document.getElementById('camera-placeholder').style.display = 'flex';
+                document.getElementById('camera-placeholder').style.flexDirection = 'column';
+                document.getElementById('camera-placeholder').style.alignItems = 'center';
+                document.getElementById('camera-placeholder').style.justifyContent = 'center';
+                document.getElementById('camera-overlay').style.display = 'none';
+                document.getElementById('camera-status').style.display = 'none';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            // Login Logic
-            document.getElementById('login-form').addEventListener('submit', async (e) => {
+            // Fix placeholder style initially
+            const placeholder = document.getElementById('camera-placeholder');
+            if (placeholder) {
+                placeholder.style.display = 'flex';
+                placeholder.style.flexDirection = 'column';
+                placeholder.style.alignItems = 'center';
+                placeholder.style.justifyContent = 'center';
+            }
+
+            // Unified Login Logic
+            document.getElementById('unified-login-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
 
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
                 const errorDiv = document.getElementById('error-message');
+                const video = document.getElementById('video');
+                const canvas = document.getElementById('canvas');
 
-                try {
-                    const response = await fetch('/api/accounts/login/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ username, password })
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        localStorage.setItem('authToken', data.access);
-                        localStorage.setItem('refreshToken', data.refresh);
-                        localStorage.setItem('userRole', data.user.role);
-                        localStorage.setItem('userName', data.user.username);
-
-                        const role = data.user.role;
-                        if (role === 'citizen') {
-                            window.location.href = '/citizen/';
-                        } else if (role === 'doctor') {
-                            window.location.href = '/doctor/';
-                        } else if (role === 'city_staff') {
-                            window.location.href = '/city-staff/';
-                        } else if (role === 'agri_officer') {
-                            window.location.href = '/agri-officer/';
-                        } else if (role === 'admin') {
-                            window.location.href = '/admin-dashboard/';
-                        } else {
-                            window.location.href = '/';
-                        }
-                    } else {
-                        errorDiv.textContent = data.non_field_errors ? data.non_field_errors[0] : 'Authentication failed. Please check your credentials.';
-                        errorDiv.style.display = 'block';
-                    }
-                } catch (error) {
-                    errorDiv.textContent = 'A system error occurred. Please try again.';
+                if (!stream) {
+                    errorDiv.textContent = "Please enable camera and verify your face.";
                     errorDiv.style.display = 'block';
+                    return;
                 }
+
+                // Capture Face
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+
+                canvas.toBlob(async (blob) => {
+                    const formData = new FormData();
+                    formData.append('username', username);
+                    formData.append('password', password);
+                    formData.append('image', blob, 'face.jpg');
+
+                    try {
+                        const btn = document.getElementById('login-btn');
+                        const originalText = btn.textContent;
+                        btn.textContent = "Verifying Credentials...";
+                        btn.disabled = true;
+
+                        const response = await fetch('/api/accounts/login/face/', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            handleLoginSuccess(data);
+                        } else {
+                            errorDiv.textContent = data.error || data.non_field_errors?.[0] || 'Authentication failed.';
+                            errorDiv.style.display = 'block';
+                            btn.textContent = originalText;
+                            btn.disabled = false;
+                        }
+                    } catch (error) {
+                        errorDiv.textContent = 'System error. Please try again.';
+                        errorDiv.style.display = 'block';
+                        document.getElementById('login-btn').textContent = "Secure Login";
+                        document.getElementById('login-btn').disabled = false;
+                    }
+                }, 'image/jpeg');
             });
+
+            function handleLoginSuccess(data) {
+                localStorage.setItem('authToken', data.access);
+                localStorage.setItem('refreshToken', data.refresh);
+                localStorage.setItem('userRole', data.user.role);
+                localStorage.setItem('userName', data.user.username);
+
+                const role = data.user.role;
+                if (role === 'citizen') {
+                    window.location.href = '/citizen/';
+                } else if (role === 'doctor') {
+                    window.location.href = '/doctor/';
+                } else if (role === 'city_staff') {
+                    window.location.href = '/city-staff/';
+                } else if (role === 'agri_officer') {
+                    window.location.href = '/agri-officer/';
+                } else if (role === 'admin') {
+                    window.location.href = '/admin-dashboard/';
+                } else {
+                    window.location.href = '/';
+                }
+            }
         });
     </script>
 </body>

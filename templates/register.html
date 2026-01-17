@@ -1,99 +1,315 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - DPI Platform</title>
+    <title>Register - Digital Public Infrastructure</title>
     {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        :root {
+            --civic-green: #1e8449;
+            --gov-blue: #0B4F87;
+            --pure-white: #ffffff;
+            --light-bg: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--pure-white);
+            color: #0f172a;
+            overflow-x: hidden;
+            background: linear-gradient(to bottom, #ffffff, #f8fafc);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header (Consistent with Index) --- */
+        header {
+            padding: 2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+            letter-spacing: 2px;
+            text-decoration: none;
+        }
+
+        /* --- Main Container --- */
+        .register-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 5%;
+            position: relative;
+        }
+
+        .hero-bg-text {
+            position: absolute;
+            font-size: 15vw;
+            font-weight: 900;
+            color: rgba(11, 79, 135, 0.02);
+            white-space: nowrap;
+            z-index: -1;
+            user-select: none;
+        }
+
+        .register-card {
+            background: white;
+            width: 100%;
+            max-width: 800px;
+            padding: 4rem;
+            border-bottom: 10px solid var(--civic-green);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.05);
+        }
+
+        .register-card h1 {
+            font-size: 2.5rem;
+            color: var(--gov-blue);
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .register-card p.subtitle {
+            font-size: 1rem;
+            opacity: 0.5;
+            margin-bottom: 3rem;
+        }
+
+        .grid {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gov-blue);
+            margin-bottom: 0.6rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: 1rem;
+            font-weight: 400;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--civic-green);
+            background: white;
+            box-shadow: 0 10px 20px rgba(30, 132, 73, 0.05);
+        }
+
+        .btn-ultra {
+            width: 100%;
+            padding: 1.5rem;
+            background: var(--gov-blue);
+            color: white;
+            border: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            margin-top: 1rem;
+        }
+
+        .btn-ultra:hover {
+            background: var(--civic-green);
+            transform: scale(1.02) rotate(-1deg);
+            box-shadow: 0 20px 40px rgba(30, 132, 73, 0.2);
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            display: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .register-footer {
+            margin-top: 3rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .register-footer a {
+            color: var(--gov-blue);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .register-footer a:hover {
+            color: var(--civic-green);
+        }
+
+        /* --- Footer --- */
+        footer {
+            padding: 4rem 5%;
+            background: white;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .footer-wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            opacity: 0.5;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .register-card {
+                padding: 2.5rem;
+            }
+        }
+    </style>
 </head>
-<body style="background: linear-gradient(135deg, #10b981, #059669); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 0;">
-    <div class="card" style="max-width: 600px; width: 90%; padding: 2.5rem;">
-        <div style="text-align: center; margin-bottom: 2rem;">
-            <h1 style="color: var(--primary-color); margin-bottom: 0.5rem;">🏛️ DPI Platform</h1>
-            <p style="color: var(--text-secondary);">Digital Public Infrastructure</p>
+
+<body>
+
+    <main class="register-main">
+        <div class="hero-bg-text">ESTABLISH.IDENTITY</div>
+        <div class="register-card">
+            <h1>REGISTER</h1>
+            <p class="subtitle">Join the National Digital Public Infrastructure network.</p>
+
+            <div id="error-message" class="message error-message"></div>
+            <div id="success-message" class="message success-message"></div>
+
+            <form id="register-form">
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" id="first_name" placeholder="E.g. John" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" id="last_name" placeholder="E.g. Doe" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="username" placeholder="Choose a unique ID" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="email" placeholder="name@example.com" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="phone_number" placeholder="1234567890">
+                    </div>
+                    <div class="form-group">
+                        <label>Platform Role</label>
+                        <select id="role" required>
+                            <option value="citizen">Citizen</option>
+                            <option value="doctor">Doctor (Requires Approval)</option>
+                            <option value="city_staff">City Staff (Requires Approval)</option>
+                            <option value="agri_officer">Agricultural Officer (Requires Approval)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Residential Address / Location</label>
+                    <textarea id="address" rows="2" placeholder="Full address particulars"></textarea>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label>Security Password</label>
+                        <input type="password" id="password" placeholder="Min. 8 characters" required minlength="8">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Security Password</label>
+                        <input type="password" id="password_confirm" placeholder="Repeat password" required
+                            minlength="8">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-ultra">Initialize Registration</button>
+            </form>
+
+            <div class="register-footer">
+                <p>Already established? <a href="/login/">Access Portal</a></p>
+                <p style="margin-top: 1rem;"><a href="/">← Return to Public Terminal</a></p>
+            </div>
         </div>
+    </main>
 
-        <h2 style="text-align: center; margin-bottom: 2rem;">Register</h2>
-
-        <div id="success-message" class="hidden" style="background: #d1fae5; color: #065f46; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;"></div>
-        <div id="error-message" class="hidden" style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;"></div>
-
-        <form id="register-form">
-            <div class="grid grid-2" style="gap: 1rem;">
-                <div class="form-group">
-                    <label class="form-label">First Name</label>
-                    <input type="text" id="first_name" class="form-input" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Last Name</label>
-                    <input type="text" id="last_name" class="form-input" required>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Username</label>
-                <input type="text" id="username" class="form-input" required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" id="email" class="form-input" required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Phone Number</label>
-                <input type="tel" id="phone_number" class="form-input" placeholder="1234567890">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Role</label>
-                <select id="role" class="form-select" required>
-                    <option value="citizen">Citizen</option>
-                    <option value="doctor">Doctor (Requires Approval)</option>
-                    <option value="city_staff">City Staff (Requires Approval)</option>
-                    <option value="agri_officer">Agricultural Officer (Requires Approval)</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Address</label>
-                <textarea id="address" class="form-textarea" rows="2"></textarea>
-            </div>
-
-            <div class="grid grid-2" style="gap: 1rem;">
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" id="password" class="form-input" required minlength="8">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Confirm Password</label>
-                    <input type="password" id="password_confirm" class="form-input" required minlength="8">
-                </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
-                Register
-            </button>
-        </form>
-
-        <div style="text-align: center; margin-top: 1.5rem;">
-            <p style="color: var(--text-secondary);">
-                Already have an account? 
-                <a href="/login/" style="color: var(--primary-color); font-weight: 500;">Login here</a>
-            </p>
-            <p style="margin-top: 0.5rem;">
-                <a href="/" style="color: var(--text-secondary);">← Back to Home</a>
-            </p>
+    <footer>
+        <div class="footer-wrap">
+            <p>&copy; 2026 Digital Public Infrastructure Platform.</p>
+            <p>AU Hackathon Edition</p>
         </div>
-    </div>
+    </footer>
 
+    <script src="{% static 'js/main.js' %}"></script>
     <script>
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const formData = {
                 username: document.getElementById('username').value,
                 email: document.getElementById('email').value,
@@ -108,13 +324,13 @@
 
             const errorDiv = document.getElementById('error-message');
             const successDiv = document.getElementById('success-message');
-            
-            errorDiv.classList.add('hidden');
-            successDiv.classList.add('hidden');
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
 
             if (formData.password !== formData.password_confirm) {
-                errorDiv.textContent = 'Passwords do not match!';
-                errorDiv.classList.remove('hidden');
+                errorDiv.textContent = 'Verification error: Security passwords do not match!';
+                errorDiv.style.display = 'block';
                 return;
             }
 
@@ -131,29 +347,30 @@
 
                 if (response.ok) {
                     if (data.requires_approval) {
-                        successDiv.textContent = 'Registration successful! Your account is pending approval. You will be notified once approved.';
-                        successDiv.classList.remove('hidden');
+                        successDiv.textContent = 'Deployment successful! Your account is pending administrative approval. You will receive notification upon clearance.';
+                        successDiv.style.display = 'block';
                         document.getElementById('register-form').reset();
                         setTimeout(() => {
                             window.location.href = '/login/';
-                        }, 3000);
+                        }, 4000);
                     } else {
-                        successDiv.textContent = 'Registration successful! Redirecting to login...';
-                        successDiv.classList.remove('hidden');
+                        successDiv.textContent = 'Registration successful! Synchronizing with login terminal...';
+                        successDiv.style.display = 'block';
                         setTimeout(() => {
                             window.location.href = '/login/';
                         }, 2000);
                     }
                 } else {
                     const errors = Object.values(data).flat().join(', ');
-                    errorDiv.textContent = errors || 'Registration failed. Please try again.';
-                    errorDiv.classList.remove('hidden');
+                    errorDiv.textContent = `Transmission Error: ${errors || 'Registration failed. Please audit your information.'}`;
+                    errorDiv.style.display = 'block';
                 }
             } catch (error) {
-                errorDiv.textContent = 'An error occurred. Please try again.';
-                errorDiv.classList.remove('hidden');
+                errorDiv.textContent = 'System Interrupt: A network or processing error occurred. Please retry.';
+                errorDiv.style.display = 'block';
             }
         });
     </script>
 </body>
+
 </html>

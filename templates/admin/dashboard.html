@@ -1,112 +1,365 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - DPI Platform</title>
+    <title>Admin Command Terminal - DPI Platform</title>
     {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        :root {
+            --civic-green: #1e8449;
+            --gov-blue: #0B4F87;
+            --pure-white: #ffffff;
+            --light-bg: #f8fafc;
+            --accent-glow: rgba(11, 79, 135, 0.05);
+            --border-color: #e2e8f0;
+            --radius-lg: 4px;
+            --radius-md: 2px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: #0f172a;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 2.5rem 2rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 1.5rem 0;
+            list-style: none;
+            overflow-y: auto;
+        }
+
+        .sidebar-link {
+            padding: 0.8rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            text-decoration: none;
+            color: var(--gov-blue);
+            font-weight: 600;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+            opacity: 0.6;
+        }
+
+        .sidebar-link.active {
+            opacity: 1;
+            background: var(--accent-glow);
+            border-left-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 300px;
+            padding: 3rem 4%;
+        }
+
+        .section-header {
+            margin-bottom: 3rem;
+        }
+
+        .section-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-bottom: 6px solid var(--gov-blue);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            border-radius: var(--radius-lg);
+        }
+
+        .stat-card.success {
+            border-color: var(--civic-green);
+        }
+
+        .stat-card.warning {
+            border-color: #f59e0b;
+        }
+
+        .stat-card.danger {
+            border-color: #ef4444;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.5;
+            letter-spacing: 1px;
+        }
+
+        .ultra-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.02);
+            border: 1px solid #f1f5f9;
+            margin-bottom: 2.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            color: var(--gov-blue);
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .health-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: var(--radius-md);
+            margin-bottom: 0.8rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1.2rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--gov-blue);
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: #475569;
+        }
+
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 2px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            border: none;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--gov-blue);
+            color: white;
+            width: 100%;
+            text-align: left;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+            width: 100%;
+            text-align: left;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.7rem;
+            width: auto;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+    </style>
 </head>
+
 <body>
-    <div class="dashboard">
-        <aside class="sidebar">
-            <div style="padding: 0 1.5rem; margin-bottom: 2rem;">
-                <h3 style="color: var(--primary-color);">🏛️ Admin Panel</h3>
-                <p style="font-size: 0.875rem; color: var(--text-muted);">Government Admin</p>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="logo">DPI.PLATFORM</a>
+            <p
+                style="font-size: 0.7rem; font-weight: 800; color: #ef4444; text-transform: uppercase; letter-spacing: 2px;">
+                Admin Command Core</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item"><a href="#dashboard" class="sidebar-link active">📊 <span>System
+                        Overview</span></a></li>
+            <li class="sidebar-item"><a href="#approvals" class="sidebar-link">✅ <span>Auth Approvals</span></a></li>
+            <li class="sidebar-item"><a href="#services" class="sidebar-link">🔧 <span>Service Fabric</span></a></li>
+            <li class="sidebar-item"><a href="#users" class="sidebar-link">👥 <span>Identity Vault</span></a></li>
+            <li class="sidebar-item"><a href="#analytics" class="sidebar-link">📈 <span>Data Streams</span></a></li>
+            <li class="sidebar-item"><a href="/admin/" class="sidebar-link" style="color:#64748b;">⚙️ <span>Core Server
+                        Admin</span></a></li>
+            <li class="sidebar-item" style="margin-top: auto; border-top: 1px solid #f1f5f9;"><a href="#"
+                    onclick="logout(); return false;" class="sidebar-link">🚪 <span>Logout</span></a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="section-header">
+            <h1>Command Interface</h1>
+            <p style="opacity:0.7;">System-wide telemetry and administrative orchestration.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="admin-total-users">1,234</div>
+                <div class="stat-label">Identities Validated</div>
             </div>
-            <ul class="sidebar-menu">
-                <li class="sidebar-item"><a href="#dashboard" class="sidebar-link active">📊 Dashboard</a></li>
-                <li class="sidebar-item"><a href="#approvals" class="sidebar-link">✅ Approvals</a></li>
-                <li class="sidebar-item"><a href="#services" class="sidebar-link">🔧 Services</a></li>
-                <li class="sidebar-item"><a href="#users" class="sidebar-link">👥 Users</a></li>
-                <li class="sidebar-item"><a href="#analytics" class="sidebar-link">📈 Analytics</a></li>
-                <li class="sidebar-item"><a href="/admin/" class="sidebar-link">⚙️ Django Admin</a></li>
-                <li class="sidebar-item"><a href="#" onclick="logout(); return false;" class="sidebar-link">🚪 Logout</a></li>
-            </ul>
-        </aside>
-
-        <main class="main-content">
-            <h1>Government Admin Dashboard</h1>
-            <p style="color: var(--text-secondary); margin-bottom: 2rem;">System-wide administration and monitoring</p>
-
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="admin-total-users">1,234</div>
-                    <div class="stat-label">Total Users</div>
-                </div>
-                <div class="stat-card success">
-                    <div class="stat-value">3</div>
-                    <div class="stat-label">Active Services</div>
-                </div>
-                <div class="stat-card warning">
-                    <div class="stat-value" id="admin-pending-approvals">15</div>
-                    <div class="stat-label">Pending Approvals</div>
-                </div>
-                <div class="stat-card danger">
-                    <div class="stat-value">5,678</div>
-                    <div class="stat-label">Total Requests</div>
-                </div>
+            <div class="stat-card success">
+                <div class="stat-value">3</div>
+                <div class="stat-label" style="color:var(--civic-green);">Active Service Hubs</div>
             </div>
+            <div class="stat-card warning">
+                <div class="stat-value" id="admin-pending-approvals">15</div>
+                <div class="stat-label" style="color:#b45309;">Queue Approvals</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-value">5,678</div>
+                <div class="stat-label" style="color:#ef4444;">API Transactions</div>
+            </div>
+        </div>
 
-            <div class="grid grid-2 mb-3">
-                <div class="card">
-                    <h3>Service Health</h3>
-                    <div style="margin-top: 1rem;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                            <span>🏥 Healthcare</span>
-                            <span class="badge badge-success">Online</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                            <span>🌾 Agriculture</span>
-                            <span class="badge badge-success">Online</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span>🏙️ City Services</span>
-                            <span class="badge badge-success">Online</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h3>Quick Actions</h3>
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
-                        <button class="btn btn-primary">Create New Service</button>
-                        <button class="btn btn-secondary">View All Approvals</button>
-                        <button class="btn btn-outline">Generate Report</button>
-                    </div>
+        <div class="grid-2">
+            <div class="ultra-card">
+                <h3 class="card-title">📡 Hub Telemetry</h3>
+                <div class="health-item"><span>🏥 Healthcare Network</span><span
+                        class="badge badge-success">Nominal</span></div>
+                <div class="health-item"><span>🌾 Agricultural Feed</span><span
+                        class="badge badge-success">Nominal</span></div>
+                <div class="health-item"><span>🏙️ Urban Systems</span><span class="badge badge-success">Nominal</span>
                 </div>
             </div>
 
-            <div class="card">
-                <h3>Pending Service Provider Approvals</h3>
-                <div class="table-container">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Role</th>
-                                <th>Requested</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="approvals-table">
-                            <tr>
-                                <td>Dr. John Smith</td>
-                                <td>Doctor</td>
-                                <td>2 days ago</td>
-                                <td><span class="badge badge-warning">Pending</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-secondary">Approve</button>
-                                    <button class="btn btn-sm btn-danger">Reject</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="ultra-card">
+                <h3 class="card-title">⚡ Rapid Directives</h3>
+                <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                    <button class="btn btn-primary">Inject New Hub</button>
+                    <button class="btn btn-secondary">Audit Pending Log</button>
                 </div>
             </div>
-        </main>
-    </div>
+        </div>
+
+        <div class="ultra-card">
+            <h3 class="card-title">🛡️ Identity Verification Queue</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Classification</th>
+                        <th>Request Time</th>
+                        <th>Status</th>
+                        <th>Directives</th>
+                    </tr>
+                </thead>
+                <tbody id="approvals-table">
+                    <tr>
+                        <td>Dr. John Smith</td>
+                        <td>Healthcare Provider</td>
+                        <td>48h Latency</td>
+                        <td><span class="badge badge-warning">Awaiting</span></td>
+                        <td style="display: flex; gap:0.5rem;">
+                            <button class="btn btn-sm btn-primary">Validate</button>
+                            <button class="btn btn-sm btn-danger">Purge</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
     <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login/';
+        }
+    </script>
 </body>
+
 </html>

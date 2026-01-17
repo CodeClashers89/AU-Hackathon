@@ -1,556 +1,981 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doctor Dashboard - DPI Platform</title>
+    <title>Doctor Terminal - DPI Platform</title>
     {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
+        :root {
+            --civic-green: #1e8449;
+            --gov-blue: #0B4F87;
+            --pure-white: #ffffff;
+            --light-bg: #f8fafc;
+            --accent-glow: rgba(11, 79, 135, 0.05);
+            --border-color: #e2e8f0;
+            --radius-lg: 4px;
+            --radius-md: 2px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: #0f172a;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .sidebar-header {
+            padding: 2.5rem 2rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+            letter-spacing: 2px;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .portal-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--civic-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 1.5rem 0;
+            list-style: none;
+        }
+
+        .sidebar-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-link {
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            text-decoration: none;
+            color: var(--gov-blue);
+            font-weight: 600;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+            opacity: 0.6;
+        }
+
+        .sidebar-link i {
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            opacity: 1;
+            background: var(--accent-glow);
+            border-left-color: var(--gov-blue);
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            margin-left: 300px;
+            padding: 3rem 4%;
+            transition: var(--transition);
+        }
+
+        .section-header {
+            margin-bottom: 3rem;
+        }
+
+        .section-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            opacity: 0.7;
+            font-size: 1.1rem;
+        }
+
         .section-content {
             display: none;
+            animation: fadeIn 0.4s ease-out;
         }
+
         .section-content.active {
             display: block;
         }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Stats --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-bottom: 6px solid var(--gov-blue);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card.success {
+            border-color: var(--civic-green);
+        }
+
+        .stat-card.warning {
+            border-color: #f59e0b;
+        }
+
+        .stat-card.purple {
+            border-color: #8b5cf6;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.5;
+            letter-spacing: 1px;
+        }
+
+        /* --- Cards & Components --- */
+        .ultra-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.02);
+            margin-bottom: 2rem;
+            border: 1px solid #f1f5f9;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            color: var(--gov-blue);
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        /* --- Form Elements --- */
         .filter-bar {
             display: flex;
             gap: 1rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             flex-wrap: wrap;
         }
-        .filter-bar select,
-        .filter-bar input {
-            padding: 0.5rem 1rem;
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            padding: 0.8rem 1.2rem;
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-        }
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--text-muted);
-        }
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 0.5rem;
-        }
-        .patient-card {
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 1rem;
+            background: #f8fafc;
+            font-size: 0.95rem;
+            outline: none;
+            width: 100%;
             margin-bottom: 1rem;
             transition: var(--transition);
         }
-        .patient-card:hover {
-            box-shadow: var(--shadow-md);
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: var(--gov-blue);
+            background: white;
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        .filter-bar .form-input,
+        .filter-bar .form-select {
+            width: auto !important;
+            min-width: 200px;
+            margin-bottom: 0;
+        }
+
+        /* --- Tables --- */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1.2rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--gov-blue);
+            border-bottom: 2px solid #f1f5f9;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+            color: #475569;
+        }
+
+        tr:hover td {
+            background: #fafafa;
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            padding: 0.8rem 1.8rem;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            border: none;
+            transition: var(--transition);
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-radius: var(--radius-md);
+        }
+
+        .btn-primary {
+            background: var(--gov-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--civic-green);
             transform: translateY(-2px);
         }
-        .unavailability-item {
-            background: var(--bg-secondary);
-            border-left: 4px solid var(--warning-color);
-            padding: 1rem;
-            border-radius: var(--radius-md);
-            margin-bottom: 1rem;
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
         }
+
+        .btn-success {
+            background: var(--civic-green);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.7rem;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* --- Badges --- */
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-info {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* --- Patient List --- */
+        .patient-card {
+            background: white;
+            border: 1px solid #f1f5f9;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .patient-card:hover {
+            border-color: var(--gov-blue);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.02);
+            transform: translateX(5px);
+        }
+
+        /* --- Unavailability --- */
+        .unavailability-item {
+            background: white;
+            border-left: 6px solid var(--civic-green);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.02);
+        }
+
+        /* --- Profile --- */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: var(--gov-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            border-radius: var(--radius-lg);
+        }
+
+        /* --- Notifications --- */
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 1rem 1.5rem;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
+            padding: 1.2rem 2.5rem;
+            background: white;
+            border-left: 6px solid var(--civic-green);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
             z-index: 10000;
             display: none;
-            animation: slideIn 0.3s ease-out;
+            font-weight: 700;
+            animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .notification.success {
-            background: var(--success-color);
-            color: white;
-        }
+
         .notification.error {
-            background: var(--danger-color);
-            color: white;
+            border-left-color: #ef4444;
         }
-        .notification.show {
-            display: block;
+
+        .notification.info {
+            border-left-color: var(--gov-blue);
         }
+
         @keyframes slideIn {
             from {
-                transform: translateX(400px);
+                transform: translateX(100%);
                 opacity: 0;
             }
+
             to {
                 transform: translateX(0);
                 opacity: 1;
             }
         }
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .profile-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            display: flex;
+
+        /* --- Modals --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 79, 135, 0.4);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
-            color: white;
-            font-weight: 700;
+            padding: 2rem;
         }
-        .history-record {
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+
+        .modal.active {
+            display: flex;
         }
-        .history-header {
+
+        .modal-content {
+            background: white;
+            padding: 3rem;
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.1);
+            animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(0.9) translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 1rem;
         }
-        .history-body p {
-            margin-bottom: 0.75rem;
+
+        .modal-header h3 {
+            font-size: 1.5rem;
+            color: var(--gov-blue);
+            font-weight: 800;
         }
-        .prescriptions-section {
-            background: var(--bg-secondary);
-            padding: 1rem;
-            border-radius: var(--radius-md);
-            margin-top: 1rem;
+
+        .modal-close {
+            font-size: 2.5rem;
+            cursor: pointer;
+            opacity: 0.3;
+            line-height: 1;
         }
-        .prescription-item {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--border-color);
+
+        .modal-close:hover {
+            opacity: 1;
+            color: #ef4444;
         }
-        .prescription-item:last-child {
-            border-bottom: none;
+
+        /* --- Spinner --- */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--gov-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 3rem auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 80px;
+            }
+
+            .sidebar-header,
+            .sidebar-link span,
+            .portal-label {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 80px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 2rem;
+            }
         }
     </style>
 </head>
+
 <body>
-    <div class="dashboard">
-        <aside class="sidebar">
-            <div style="padding: 0 1.5rem; margin-bottom: 2rem;">
-                <h3 style="color: var(--primary-color);">🏥 Healthcare</h3>
-                <p style="font-size: 0.875rem; color: var(--text-muted);">Doctor Portal</p>
-            </div>
-            <ul class="sidebar-menu">
-                <li class="sidebar-item"><a href="#" data-section="dashboard" class="sidebar-link active">📊 Dashboard</a></li>
-                <li class="sidebar-item"><a href="#" data-section="appointments" class="sidebar-link">📅 Appointments</a></li>
-                <li class="sidebar-item"><a href="#" data-section="patients" class="sidebar-link">👥 Patients</a></li>
-                <li class="sidebar-item"><a href="#" data-section="records" class="sidebar-link">📋 Medical Records</a></li>
-                <li class="sidebar-item"><a href="#" data-section="unavailability" class="sidebar-link">⏰ Unavailability</a></li>
-                <li class="sidebar-item"><a href="#" data-section="profile" class="sidebar-link">👤 Profile</a></li>
-                <li class="sidebar-item"><a href="#" onclick="logout(); return false;" class="sidebar-link">🚪 Logout</a></li>
-            </ul>
-        </aside>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="logo">DPI.PLATFORM</a>
+            <span class="portal-label">Doctor Terminal</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item"><a href="#" data-section="dashboard" class="sidebar-link active">📊
+                    <span>Dashboard</span></a></li>
+            <li class="sidebar-item"><a href="#" data-section="appointments" class="sidebar-link">📅
+                    <span>Appointments</span></a></li>
+            <li class="sidebar-item"><a href="#" data-section="patients" class="sidebar-link">👥
+                    <span>Patients</span></a></li>
+            <li class="sidebar-item"><a href="#" data-section="records" class="sidebar-link">📋 <span>Medical
+                        Records</span></a></li>
+            <li class="sidebar-item"><a href="#" data-section="unavailability" class="sidebar-link">⏰
+                    <span>Unavailability</span></a></li>
+            <li class="sidebar-item"><a href="#" data-section="profile" class="sidebar-link">👤 <span>Profile</span></a>
+            </li>
+            <li class="sidebar-item" style="margin-top: auto; border-top: 1px solid #f1f5f9;">
+                <a href="#" onclick="logout(); return false;" class="sidebar-link">🚪 <span>Logout</span></a>
+            </li>
+        </ul>
+    </aside>
 
-        <main class="main-content">
-            <!-- Dashboard Section -->
-            <div id="dashboard-section" class="section-content active">
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="section-content active">
+            <div class="section-header">
                 <h1>Doctor Dashboard</h1>
-                <p style="color: var(--text-secondary); margin-bottom: 2rem;">Welcome back, <span id="doctor-name">{{ user.get_full_name }}</span></p>
+                <p>Welcome back, <span id="doctor-name" style="color: var(--civic-green); font-weight: 700;">{{
+                        user.get_full_name }}</span></p>
+            </div>
 
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="today-appointments">0</div>
-                        <div class="stat-label">Today's Appointments</div>
-                    </div>
-                    <div class="stat-card success">
-                        <div class="stat-value" id="total-patients">0</div>
-                        <div class="stat-label">Total Patients</div>
-                    </div>
-                    <div class="stat-card warning">
-                        <div class="stat-value" id="pending-appointments">0</div>
-                        <div class="stat-label">Pending Appointments</div>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
-                        <div class="stat-value" id="completed-today">0</div>
-                        <div class="stat-label">Completed Today</div>
-                    </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="today-appointments">0</div>
+                    <div class="stat-label">Today's Appointments</div>
                 </div>
-
-                <div class="card">
-                    <h3>Today's Schedule</h3>
-                    <div class="table-container">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Time</th>
-                                    <th>Patient</th>
-                                    <th>Reason</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="today-schedule">
-                                <tr>
-                                    <td colspan="5" class="text-center">
-                                        <div class="spinner"></div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="stat-card success">
+                    <div class="stat-value" id="total-patients">0</div>
+                    <div class="stat-label">Total Patients</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-value" id="pending-appointments">0</div>
+                    <div class="stat-label">Pending Reviews</div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-value" id="completed-today">0</div>
+                    <div class="stat-label">Completed Today</div>
                 </div>
             </div>
 
-            <!-- Appointments Section -->
-            <div id="appointments-section" class="section-content">
-                <h1>Appointments Management</h1>
-                <p style="color: var(--text-secondary); margin-bottom: 2rem;">View and manage all appointments</p>
-
-                <div class="filter-bar">
-                    <select id="appointment-status-filter" class="form-select">
-                        <option value="">All Status</option>
-                        <option value="scheduled">Scheduled</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                        <option value="no_show">No Show</option>
-                    </select>
-                    <input type="date" id="appointment-date-filter" class="form-input">
-                    <input type="text" id="appointment-search" class="form-input" placeholder="Search patient...">
-                </div>
-
-                <div class="card">
-                    <div class="table-container">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Date & Time</th>
-                                    <th>Patient</th>
-                                    <th>Contact</th>
-                                    <th>Reason</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="appointments-table">
-                                <tr>
-                                    <td colspan="6" class="text-center">
-                                        <div class="spinner"></div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="ultra-card">
+                <h3 class="card-title">📅 Today's Schedule</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Patient</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="today-schedule">
+                            <tr>
+                                <td colspan="5">
+                                    <div class="spinner"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
+        </div>
 
-            <!-- Patients Section -->
-            <div id="patients-section" class="section-content">
+        <!-- Appointments Section -->
+        <div id="appointments-section" class="section-content">
+            <div class="section-header">
+                <h1>Appointments</h1>
+                <p>Manage and track patient visits</p>
+            </div>
+
+            <div class="filter-bar">
+                <select id="appointment-status-filter" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="no_show">No Show</option>
+                </select>
+                <input type="date" id="appointment-date-filter" class="form-input">
+                <input type="text" id="appointment-search" class="form-input" style="flex:1"
+                    placeholder="Search patient name...">
+            </div>
+
+            <div class="ultra-card">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Patient</th>
+                                <th>Contact</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appointments-table">
+                            <tr>
+                                <td colspan="6">
+                                    <div class="spinner"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patients Section -->
+        <div id="patients-section" class="section-content">
+            <div class="section-header">
                 <h1>My Patients</h1>
-                <p style="color: var(--text-secondary); margin-bottom: 2rem;">View patient information and history</p>
-
-                <div class="filter-bar">
-                    <input type="text" id="patient-search" class="form-input" placeholder="Search by name, email, or phone...">
-                </div>
-
-                <div id="patients-list">
-                    <div class="text-center">
-                        <div class="spinner"></div>
-                    </div>
-                </div>
+                <p>Comprehensive list of Subjects</p>
             </div>
 
-            <!-- Medical Records Section -->
-            <div id="records-section" class="section-content">
+            <div class="filter-bar">
+                <input type="text" id="patient-search" class="form-input" style="flex:1"
+                    placeholder="Search by name, email, or phone...">
+            </div>
+
+            <div id="patients-list">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- Medical Records Section -->
+        <div id="records-section" class="section-content">
+            <div class="section-header">
                 <h1>Medical Records</h1>
-                <p style="color: var(--text-secondary); margin-bottom: 2rem;">Create and view medical records</p>
-
-                <button class="btn btn-primary mb-3" onclick="openCreateRecordModal()">➕ Create New Record</button>
-
-                <div class="filter-bar">
-                    <input type="text" id="record-search" class="form-input" placeholder="Search by patient name...">
-                    <input type="date" id="record-date-filter" class="form-input">
-                </div>
-
-                <div id="records-list">
-                    <div class="text-center">
-                        <div class="spinner"></div>
-                    </div>
-                </div>
+                <p>Archive and Diagnostic Logs</p>
+                <button class="btn btn-primary" onclick="openCreateRecordModal()" style="margin-top: 1.5rem;">➕ Create
+                    New Record</button>
             </div>
 
-            <!-- Unavailability Section -->
-            <div id="unavailability-section" class="section-content">
-                <h1>Manage Unavailability</h1>
-                <p style="color: var(--text-secondary); margin-bottom: 2rem;">Set periods when you're unavailable</p>
-
-                <button class="btn btn-primary mb-3" onclick="openUnavailabilityModal()">➕ Add Unavailability Period</button>
-
-                <div id="unavailability-list">
-                    <div class="text-center">
-                        <div class="spinner"></div>
-                    </div>
-                </div>
+            <div class="filter-bar">
+                <input type="text" id="record-search" class="form-input" style="flex:1"
+                    placeholder="Search by patient name...">
+                <input type="date" id="record-date-filter" class="form-input">
             </div>
 
-            <!-- Profile Section -->
-            <div id="profile-section" class="section-content">
+            <div id="records-list">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- Unavailability Section -->
+        <div id="unavailability-section" class="section-content">
+            <div class="section-header">
+                <h1>Unavailability</h1>
+                <p>Manage your schedule blocks</p>
+                <button class="btn btn-primary" onclick="openUnavailabilityModal()" style="margin-top: 1.5rem;">➕ Add
+                    Block Period</button>
+            </div>
+
+            <div id="unavailability-list">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div id="profile-section" class="section-content">
+            <div class="section-header">
                 <h1>My Profile</h1>
-                <p style="color: var(--text-secondary); margin-bottom: 2rem;">View and update your profile information</p>
+                <p>Public Identity & Qualifications</p>
+            </div>
 
-                <div class="card">
-                    <div class="profile-header">
-                        <div class="profile-avatar" id="profile-avatar">DR</div>
-                        <div>
-                            <h2 id="profile-full-name">{{ user.get_full_name }}</h2>
-                            <p style="color: var(--text-muted);" id="profile-specialization">Loading...</p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-2">
-                        <div>
-                            <p><strong>Email:</strong> <span id="profile-email">{{ user.email }}</span></p>
-                            <p><strong>Phone:</strong> <span id="profile-phone">{{ user.phone_number }}</span></p>
-                            <p><strong>License Number:</strong> <span id="profile-license">-</span></p>
-                        </div>
-                        <div>
-                            <p><strong>Qualification:</strong> <span id="profile-qualification">-</span></p>
-                            <p><strong>Experience:</strong> <span id="profile-experience">-</span> years</p>
-                            <p><strong>Consultation Fee:</strong> ₹<span id="profile-fee">-</span></p>
-                        </div>
-                    </div>
-
-                    <div class="mt-3">
-                        <p><strong>Hospital Affiliation:</strong> <span id="profile-hospital">-</span></p>
-                        <p><strong>Availability Status:</strong> <span id="profile-availability" class="badge badge-success">Available</span></p>
+            <div class="ultra-card">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profile-avatar">DR</div>
+                    <div>
+                        <h2 id="profile-full-name" style="font-size: 2rem; color: var(--gov-blue);">{{
+                            user.get_full_name }}</h2>
+                        <p id="profile-specialization"
+                            style="color: var(--civic-green); font-weight: 700; font-size: 1.1rem;">Loading...</p>
                     </div>
                 </div>
-            </div>
-        </main>
-    </div>
 
-    <!-- Appointment Details Modal -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 3rem;">
+                    <div>
+                        <div style="margin-bottom: 1.5rem;"><label
+                                style="font-size: 0.75rem; font-weight: 800; opacity: 0.5;">EMAIL ADDRESS</label>
+                            <p id="profile-email" style="font-weight: 600;">{{ user.email }}</p>
+                        </div>
+                        <div style="margin-bottom: 1.5rem;"><label
+                                style="font-size: 0.75rem; font-weight: 800; opacity: 0.5;">PHONE NUMBER</label>
+                            <p id="profile-phone" style="font-weight: 600;">{{ user.phone_number }}</p>
+                        </div>
+                        <div style="margin-bottom: 1.5rem;"><label
+                                style="font-size: 0.75rem; font-weight: 800; opacity: 0.5;">LICENSE NUMBER</label>
+                            <p id="profile-license" style="font-weight: 600;">-</p>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="margin-bottom: 1.5rem;"><label
+                                style="font-size: 0.75rem; font-weight: 800; opacity: 0.5;">QUALIFICATION</label>
+                            <p id="profile-qualification" style="font-weight: 600;">-</p>
+                        </div>
+                        <div style="margin-bottom: 1.5rem;"><label
+                                style="font-size: 0.75rem; font-weight: 800; opacity: 0.5;">EXPERIENCE</label>
+                            <p id="profile-experience" style="font-weight: 600;">- Years</p>
+                        </div>
+                        <div style="margin-bottom: 1.5rem;"><label
+                                style="font-size: 0.75rem; font-weight: 800; opacity: 0.5;">CONSULTATION FEE</label>
+                            <p style="font-weight: 600; color: var(--civic-green);">₹<span id="profile-fee">-</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #f1f5f9;">
+                    <p><strong>Hospital Affiliation:</strong> <span id="profile-hospital">-</span></p>
+                    <p style="margin-top: 0.5rem;"><strong>Current Status:</strong> <span id="profile-availability"
+                            class="badge badge-success">Available</span></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
     <div id="appointment-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Appointment Details</h3>
-                <button class="modal-close" onclick="closeModal('appointment-modal')">&times;</button>
+                <span class="modal-close" onclick="closeModal('appointment-modal')">&times;</span>
             </div>
             <div id="appointment-details"></div>
         </div>
     </div>
 
-    <!-- Create Medical Record Modal -->
     <div id="create-record-modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
-                <h3>Create Medical Record</h3>
-                <button class="modal-close" onclick="closeModal('create-record-modal')">&times;</button>
+                <h3>Diagnostic Archive</h3>
+                <span class="modal-close" onclick="closeModal('create-record-modal')">&times;</span>
             </div>
             <form id="create-record-form">
-                <div class="form-group">
-                    <label class="form-label">Patient</label>
-                    <select id="record-patient" class="form-select" required>
-                        <option value="">Select Patient</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Symptoms</label>
-                    <textarea id="record-symptoms" class="form-textarea" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Diagnosis</label>
-                    <textarea id="record-diagnosis" class="form-textarea" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Treatment Plan</label>
-                    <textarea id="record-treatment" class="form-textarea" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Notes</label>
-                    <textarea id="record-notes" class="form-textarea"></textarea>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+                    <div><label>Patient</label><select id="record-patient" class="form-select" required>
+                            <option value="">Select Subject</option>
+                        </select></div>
+                    <div><label>Symptoms</label><textarea id="record-symptoms" class="form-textarea" rows="3"
+                            required></textarea></div>
+                    <div><label>Diagnosis</label><textarea id="record-diagnosis" class="form-textarea" rows="3"
+                            required></textarea></div>
+                    <div><label>Treatment Plan</label><textarea id="record-treatment" class="form-textarea" rows="3"
+                            required></textarea></div>
+                    <div><label>Internal Notes</label><textarea id="record-notes" class="form-textarea"
+                            rows="2"></textarea></div>
                 </div>
 
-                <!-- Prescription Section -->
-                <div class="form-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <label class="form-label" style="margin: 0;">Prescriptions</label>
-                        <button type="button" class="btn btn-sm btn-secondary" onclick="addMedicineRow()">+ Add Medicine</button>
+                <div style="margin: 2rem 0;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4
+                            style="color: var(--gov-blue); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">
+                            Prescriptions</h4>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="addMedicineRow()">+ Add
+                            Medication</button>
                     </div>
-                    <div id="prescriptions-container">
-                        <!-- Medicine rows will be added here dynamically -->
-                    </div>
+                    <div id="prescriptions-container"></div>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Create Record</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Finalize Archive Entry</button>
             </form>
         </div>
     </div>
 
-    <!-- Patient History Modal -->
     <div id="patient-history-modal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-content" style="max-width: 1000px;">
             <div class="modal-header">
-                <h3>Patient History - <span id="patient-history-name"></span></h3>
-                <button class="modal-close" onclick="closeModal('patient-history-modal')">&times;</button>
+                <h3>Subject History: <span id="patient-history-name" style="color: var(--civic-green);"></span></h3>
+                <span class="modal-close" onclick="closeModal('patient-history-modal')">&times;</span>
             </div>
-            <div id="patient-history-content" style="max-height: 500px; overflow-y: auto;">
-                <div class="text-center">
-                    <div class="spinner"></div>
-                </div>
+            <div id="patient-history-content" style="max-height: 60vh; overflow-y: auto; padding-right: 1.5rem;">
+                <div class="spinner"></div>
             </div>
         </div>
     </div>
 
-    <!-- Medicine Row Template (hidden) -->
+    <div id="unavailability-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Schedule Block</h3>
+                <span class="modal-close" onclick="closeModal('unavailability-modal')">&times;</span>
+            </div>
+            <form id="unavailability-form">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div><label>Start Date</label><input type="date" id="unavail-start" class="form-input" required>
+                    </div>
+                    <div><label>End Date</label><input type="date" id="unavail-end" class="form-input" required></div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div><label>Start Time</label><input type="time" id="unavail-start-time" class="form-input"></div>
+                    <div><label>End Time</label><input type="time" id="unavail-end-time" class="form-input"></div>
+                </div>
+                <label>Recurrence</label>
+                <select id="unavail-recurrence" class="form-select">
+                    <option value="none">One Time</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                </select>
+                <label>Reason / Note</label>
+                <input type="text" id="unavail-reason" class="form-input" required placeholder="e.g. Surgery, Vacation">
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Confirm
+                    Block</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Medicine Template -->
     <template id="medicine-row-template">
-        <div class="medicine-row" style="border: 1px solid var(--border-color); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; position: relative;">
-            <button type="button" class="btn btn-sm btn-danger" onclick="removeMedicineRow(this)" style="position: absolute; top: 0.5rem; right: 0.5rem;">×</button>
-            
-            <div class="grid grid-2" style="gap: 1rem;">
-                <div class="form-group" style="margin-bottom: 0.5rem;">
-                    <label class="form-label">Medicine Name</label>
-                    <input type="text" class="form-input medicine-name" placeholder="e.g., Paracetamol" list="common-medicines">
-                </div>
-                <div class="form-group" style="margin-bottom: 0.5rem;">
-                    <label class="form-label">Dosage</label>
-                    <input type="text" class="form-input medicine-dosage" placeholder="e.g., 500mg, 1 tablet">
-                </div>
+        <div class="medicine-row"
+            style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 2rem; margin-bottom: 1.5rem; position: relative; border-radius: var(--radius-lg);">
+            <button type="button" class="btn btn-sm btn-danger" onclick="removeMedicineRow(this)"
+                style="position: absolute; right: 20px; top: 20px;">×</button>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div><label style="font-size: 0.7rem; font-weight: 800;">MEDICINE NAME</label><input type="text"
+                        class="form-input medicine-name" placeholder="e.g. Paracetamol" list="common-medicines"></div>
+                <div><label style="font-size: 0.7rem; font-weight: 800;">DOSAGE</label><input type="text"
+                        class="form-input medicine-dosage" placeholder="e.g. 500mg"></div>
             </div>
 
-            <div class="grid grid-2" style="gap: 1rem;">
-                <div class="form-group" style="margin-bottom: 0.5rem;">
-                    <label class="form-label">Frequency</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div>
+                    <label style="font-size: 0.7rem; font-weight: 800;">FREQUENCY</label>
                     <select class="form-select medicine-frequency">
                         <option value="">Select frequency</option>
                         <option value="Once daily">Once daily</option>
                         <option value="Twice daily">Twice daily</option>
                         <option value="Thrice daily">Thrice daily</option>
-                        <option value="Four times daily">Four times daily</option>
-                        <option value="Every 4 hours">Every 4 hours</option>
-                        <option value="Every 6 hours">Every 6 hours</option>
-                        <option value="Every 8 hours">Every 8 hours</option>
                         <option value="As needed">As needed</option>
                     </select>
                 </div>
-                <div class="form-group" style="margin-bottom: 0.5rem;">
-                    <label class="form-label">Timing</label>
-                    <div class="medicine-timings-container" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <div>
+                    <label style="font-size: 0.7rem; font-weight: 800;">SPECIFIC TIMING</label>
+                    <div class="medicine-timings-container">
                         <select class="form-select medicine-timing">
                             <option value="">Select timing</option>
-                            <option value="Before breakfast">Before breakfast</option>
                             <option value="After breakfast">After breakfast</option>
-                            <option value="Before lunch">Before lunch</option>
                             <option value="After lunch">After lunch</option>
-                            <option value="Before dinner">Before dinner</option>
                             <option value="After dinner">After dinner</option>
                             <option value="At bedtime">At bedtime</option>
-                            <option value="Empty stomach">Empty stomach</option>
-                            <option value="With food">With food</option>
                         </select>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-2" style="gap: 1rem;">
-                <div class="form-group" style="margin-bottom: 0.5rem;">
-                    <label class="form-label">Duration</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div>
+                    <label style="font-size: 0.7rem; font-weight: 800;">DURATION</label>
                     <div style="display: flex; gap: 0.5rem;">
-                        <input type="number" class="form-input medicine-duration-value" placeholder="7" style="flex: 1;" min="1">
+                        <input type="number" class="form-input medicine-duration-value" placeholder="7" style="flex: 1;"
+                            min="1">
                         <select class="form-select medicine-duration-unit" style="flex: 1;">
                             <option value="days">Days</option>
                             <option value="weeks">Weeks</option>
-                            <option value="months">Months</option>
                         </select>
                     </div>
                 </div>
-                <div class="form-group" style="margin-bottom: 0.5rem;">
-                    <label class="form-label">Additional Instructions</label>
-                    <input type="text" class="form-input medicine-instructions" placeholder="e.g., Take with water">
-                </div>
+                <div><label style="font-size: 0.7rem; font-weight: 800;">INSTRUCTIONS</label><input type="text"
+                        class="form-input medicine-instructions" placeholder="Take with water"></div>
             </div>
         </div>
     </template>
 
-    <!-- Common Medicines Datalist -->
     <datalist id="common-medicines">
         <option value="Paracetamol">
         <option value="Ibuprofen">
         <option value="Amoxicillin">
         <option value="Azithromycin">
-        <option value="Ciprofloxacin">
         <option value="Omeprazole">
-        <option value="Pantoprazole">
-        <option value="Cetirizine">
-        <option value="Loratadine">
-        <option value="Metformin">
-        <option value="Aspirin">
-        <option value="Atorvastatin">
-        <option value="Amlodipine">
-        <option value="Losartan">
-        <option value="Levothyroxine">
-        <option value="Vitamin D3">
-        <option value="Calcium">
-        <option value="Multivitamin">
     </datalist>
 
-    <!-- Unavailability Modal -->
-    <div id="unavailability-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Add Unavailability Period</h3>
-                <button class="modal-close" onclick="closeModal('unavailability-modal')">&times;</button>
-            </div>
-            <form id="unavailability-form">
-                <div class="form-group">
-                    <label class="form-label">Start Date</label>
-                    <input type="date" id="unavail-start" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">End Date</label>
-                    <input type="date" id="unavail-end" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Time (Optional - for partial day/lunch)</label>
-                    <div style="display: flex; gap: 1rem;">
-                        <div style="flex: 1;">
-                            <label class="form-label" style="font-size: 0.8rem;">Start Time</label>
-                            <input type="time" id="unavail-start-time" class="form-input">
-                        </div>
-                        <div style="flex: 1;">
-                            <label class="form-label" style="font-size: 0.8rem;">End Time</label>
-                            <input type="time" id="unavail-end-time" class="form-input">
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Recurrence</label>
-                    <select id="unavail-recurrence" class="form-select">
-                        <option value="none">None (One Time)</option>
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Reason</label>
-                    <input type="text" id="unavail-reason" class="form-input" required placeholder="e.g., Lunch Break, Half Day, Vacation">
-                </div>
-                <button type="submit" class="btn btn-primary">Add Period</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Notification -->
     <div id="notification" class="notification"></div>
 
+    <!-- Scripts -->
     <script>
         const CURRENT_USER_ID = {{ user.id|default:0 }};
+        const API_BASE = '/api/healthcare';
     </script>
+
     <script src="{% static 'js/doctor_dashboard.js' %}"></script>
 </body>
+
 </html>

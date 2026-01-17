@@ -1,112 +1,294 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - DPI Platform</title>
+    <title>Login - Digital Public Infrastructure</title>
     {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-</head>
-<body style="background: linear-gradient(135deg, #2563eb, #1e40af); min-height: 100vh; display: flex; align-items: center; justify-content: center;">
-    <div class="card" style="max-width: 450px; width: 90%; padding: 2.5rem;">
-        <div style="text-align: center; margin-bottom: 2rem;">
-            <h1 style="color: var(--primary-color); margin-bottom: 0.5rem;">🏛️ DPI Platform</h1>
-            <p style="color: var(--text-secondary);">Digital Public Infrastructure</p>
-        </div>
+    <style>
+        :root {
+            --civic-green: #1e8449;
+            --gov-blue: #0B4F87;
+            --pure-white: #ffffff;
+            --light-bg: #f8fafc;
+        }
 
-        <h2 style="text-align: center; margin-bottom: 2rem;">Login</h2>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
 
-        <div id="error-message" class="hidden" style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;"></div>
+        body {
+            background-color: var(--pure-white);
+            color: #0f172a;
+            overflow-x: hidden;
+            background: linear-gradient(to bottom, #ffffff, #f8fafc);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-        <form id="login-form">
-            <div class="form-group">
-                <label class="form-label">Username</label>
-                <input type="text" id="username" class="form-input" required>
-            </div>
+        /* --- Header --- */
+        header {
+            padding: 2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
 
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" id="password" class="form-input" required>
-            </div>
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+            letter-spacing: 2px;
+            text-decoration: none;
+        }
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
-                Login
-            </button>
-        </form>
+        /* --- Login Container --- */
+        .login-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 5%;
+            position: relative;
+        }
 
-        <div style="text-align: center; margin-top: 1.5rem;">
-            <p style="color: var(--text-secondary);">
-                Don't have an account? 
-                <a href="/register/" style="color: var(--primary-color); font-weight: 500;">Register here</a>
-            </p>
-            <p style="margin-top: 0.5rem;">
-                <a href="/" style="color: var(--text-secondary);">← Back to Home</a>
-            </p>
-        </div>
-    </div>
+        .hero-bg-text {
+            position: absolute;
+            font-size: 15vw;
+            font-weight: 900;
+            color: rgba(11, 79, 135, 0.02);
+            white-space: nowrap;
+            z-index: -1;
+            user-select: none;
+        }
 
-    <script>
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('error-message');
-            
-            try {
-                const response = await fetch('/api/accounts/login/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ username, password })
-                });
+        .login-card {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            padding: 4rem;
+            border-bottom: 10px solid var(--gov-blue);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.05);
+            transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
+        }
 
-                const data = await response.json();
+        .login-card h1 {
+            font-size: 2.5rem;
+            color: var(--gov-blue);
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+        }
 
-                if (response.ok) {
-                    // Store tokens and user info
-                    localStorage.setItem('authToken', data.access);
-                    localStorage.setItem('refreshToken', data.refresh);
-                    localStorage.setItem('userRole', data.user.role);
-                    localStorage.setItem('userName', `${data.user.first_name} ${data.user.last_name}`.trim() || data.user.username);
-                    localStorage.setItem('userEmail', data.user.email || '');
+        .login-card p.subtitle {
+            font-size: 1rem;
+            opacity: 0.5;
+            margin-bottom: 3rem;
+        }
 
-                    // Redirect based on role
-                    const role = data.user.role;
-                    if (role === 'citizen') {
-                        window.location.href = '/citizen/';
-                    } else if (role === 'doctor') {
-                        window.location.href = '/doctor/';
-                    } else if (role === 'city_staff') {
-                        window.location.href = '/city-staff/';
-                    } else if (role === 'agri_officer') {
-                        window.location.href = '/agri-officer/';
-                    } else if (role === 'admin') {
-                        window.location.href = '/admin-dashboard/';
-                    } else {
-                        window.location.href = '/';
-                    }
+        .form-group {
+            margin-bottom: 2rem;
+        }
 
-                } else {
-                    let errorMessage = 'Login failed. Please check your credentials.';
-                    if (data.non_field_errors) {
-                        errorMessage = data.non_field_errors[0];
-                    } else if (data.detail) {
-                        errorMessage = data.detail;
-                    } else if (typeof data === 'object') {
-                        // Handle field errors
-                        const firstKey = Object.keys(data)[0];
-                        errorMessage = `${firstKey}: ${data[firstKey][0]}`;
-                    }
-                    errorDiv.textContent = errorMessage;
-                    errorDiv.classList.remove('hidden');
-                }
-            } catch (error) {
-                errorDiv.textContent = 'An error occurred. Please try again.';
-                errorDiv.classList.remove('hidden');
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gov-blue);
+            margin-bottom: 0.8rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1.2rem;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: var(--civic-green);
+            background: white;
+            box-shadow: 0 10px 20px rgba(30, 132, 73, 0.05);
+        }
+
+        .btn-ultra {
+            width: 100%;
+            padding: 1.5rem;
+            background: var(--gov-blue);
+            color: white;
+            border: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            margin-top: 1rem;
+        }
+
+        .btn-ultra:hover {
+            background: var(--civic-green);
+            transform: scale(1.02) rotate(-1deg);
+            box-shadow: 0 20px 40px rgba(30, 132, 73, 0.2);
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: none;
+        }
+
+        .login-footer {
+            margin-top: 3rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .login-footer a {
+            color: var(--gov-blue);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .login-footer a:hover {
+            color: var(--civic-green);
+        }
+
+        /* --- Footer --- */
+        footer {
+            padding: 4rem 5%;
+            background: white;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .footer-wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            opacity: 0.5;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .login-card {
+                padding: 2.5rem;
             }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <a href="/" class="logo">DPI.PLATFORM</a>
+    </header>
+
+    <main class="login-main">
+        <div class="hero-bg-text">AUTHENTICATION</div>
+        <div class="login-card">
+            <h1>LOGIN</h1>
+            <p class="subtitle">Enter your credentials to access the National Digital Public Infrastructure.</p>
+
+            <div id="error-message" class="error-message"></div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Username / ID</label>
+                    <input type="text" id="username" placeholder="Enter your username" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Security Key / Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn-ultra">Connect to System</button>
+            </form>
+
+            <div class="login-footer">
+                <p>New to the platform? <a href="/register/">Register Credentials</a></p>
+                <p style="margin-top: 1rem;"><a href="/">← Return to Public Terminal</a></p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-wrap">
+            <p>&copy; 2026 Digital Public Infrastructure Platform.</p>
+            <p>AU Hackathon Edition</p>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Login Logic
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const errorDiv = document.getElementById('error-message');
+
+                try {
+                    const response = await fetch('/api/accounts/login/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        localStorage.setItem('authToken', data.access);
+                        localStorage.setItem('refreshToken', data.refresh);
+                        localStorage.setItem('userRole', data.user.role);
+                        localStorage.setItem('userName', data.user.username);
+
+                        const role = data.user.role;
+                        if (role === 'citizen') {
+                            window.location.href = '/citizen/';
+                        } else if (role === 'doctor') {
+                            window.location.href = '/doctor/';
+                        } else if (role === 'city_staff') {
+                            window.location.href = '/city-staff/';
+                        } else if (role === 'agri_officer') {
+                            window.location.href = '/agri-officer/';
+                        } else if (role === 'admin') {
+                            window.location.href = '/admin-dashboard/';
+                        } else {
+                            window.location.href = '/';
+                        }
+                    } else {
+                        errorDiv.textContent = data.non_field_errors ? data.non_field_errors[0] : 'Authentication failed. Please check your credentials.';
+                        errorDiv.style.display = 'block';
+                    }
+                } catch (error) {
+                    errorDiv.textContent = 'A system error occurred. Please try again.';
+                    errorDiv.style.display = 'block';
+                }
+            });
         });
     </script>
 </body>
+
 </html>

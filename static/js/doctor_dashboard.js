@@ -1,9 +1,9 @@
-// Doctor Dashboard JavaScript
+/**
+ * DPI Platform - Doctor Terminal Logic
+ * Refined and Optimized Version
+ */
 
-// API Base URL
-const API_BASE = '/api/healthcare';
-
-// State
+// State Management
 let currentSection = 'dashboard';
 let appointments = [];
 let activeAppointmentId = null;
@@ -12,683 +12,409 @@ let records = [];
 let unavailabilityPeriods = [];
 let doctorProfile = null;
 
-// Initialize
-document.addEventListener('DOMContentLoaded', function () {
+// Initialization
+document.addEventListener('DOMContentLoaded', () => {
     initializeSidebarNavigation();
     loadDoctorProfile();
     loadDashboardData();
     setupEventListeners();
 });
 
-// Sidebar Navigation
 function initializeSidebarNavigation() {
-    const sidebarLinks = document.querySelectorAll('.sidebar-link');
-    sidebarLinks.forEach(link => {
-        link.addEventListener('click', function (e) {
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            if (link.getAttribute('onclick')) return;
             e.preventDefault();
-            const section = this.getAttribute('data-section');
-            if (section) {
-                switchSection(section);
-            }
+            const section = link.getAttribute('data-section');
+            if (section) switchSection(section);
         });
     });
 }
 
 function switchSection(section) {
-    // Update active link
-    document.querySelectorAll('.sidebar-link').forEach(link => {
-        link.classList.remove('active');
-    });
-    document.querySelector(`[data-section="${section}"]`).classList.add('active');
-
-    // Update active section
-    document.querySelectorAll('.section-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    document.getElementById(`${section}-section`).classList.add('active');
-
+    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+    document.querySelector(`[data-section="${section}"]`)?.classList.add('active');
+    document.querySelectorAll('.section-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(`${section}-section`)?.classList.add('active');
     currentSection = section;
-
-    // Load section data
     loadSectionData(section);
 }
 
-function loadSectionData(section) {
-    switch (section) {
-        case 'dashboard':
-            loadDashboardData();
-            break;
-        case 'appointments':
-            loadAllAppointments();
-            break;
-        case 'patients':
-            loadPatients();
-            break;
-        case 'records':
-            loadMedicalRecords();
-            break;
-        case 'unavailability':
-            loadUnavailability();
-            break;
-        case 'profile':
-            displayProfile();
-            break;
-    }
+function loadSectionData(sec) {
+    if (sec === 'dashboard') loadDashboardData();
+    else if (sec === 'appointments') loadAllAppointments();
+    else if (sec === 'patients') loadPatients();
+    else if (sec === 'records') loadMedicalRecords();
+    else if (sec === 'unavailability') loadUnavailability();
+    else if (sec === 'profile') updateProfileDisplay();
 }
 
-// Load Doctor Profile
+// Data Fetching & Display
 async function loadDoctorProfile() {
     try {
-        const response = await fetch(`${API_BASE}/doctors/`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-            }
+        const r = await fetch(`${API_BASE}/doctors/`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
-
-        if (response.ok) {
-            const data = await response.json();
-            const doctors = data.results || data;
-            // Find current doctor's profile
-            doctorProfile = doctors.find(d => d.user.id === getCurrentUserId()) || doctors[0];
+        if (r.ok) {
+            const d = await r.json();
+            const list = d.results || d;
+            // Use the global CURRENT_USER_ID defined in the HTML
+            doctorProfile = list.find(x => x.user.id === CURRENT_USER_ID) || list[0];
             updateProfileDisplay();
         }
-    } catch (error) {
-        console.error('Error loading doctor profile:', error);
-    }
+    } catch (e) { console.error('Profile fetch failed:', e); }
 }
 
 function updateProfileDisplay() {
     if (!doctorProfile) return;
-
     const initials = (doctorProfile.user.first_name[0] + doctorProfile.user.last_name[0]).toUpperCase();
-    document.getElementById('profile-avatar').textContent = initials;
-    document.getElementById('profile-full-name').textContent = `${doctorProfile.user.first_name} ${doctorProfile.user.last_name}`;
-    document.getElementById('profile-specialization').textContent = doctorProfile.specialization;
-    document.getElementById('profile-email').textContent = doctorProfile.user.email;
-    document.getElementById('profile-phone').textContent = doctorProfile.user.phone_number || 'N/A';
-    document.getElementById('profile-license').textContent = doctorProfile.license_number;
-    document.getElementById('profile-qualification').textContent = doctorProfile.qualification;
-    document.getElementById('profile-experience').textContent = doctorProfile.experience_years;
-    document.getElementById('profile-fee').textContent = doctorProfile.consultation_fee;
-    document.getElementById('profile-hospital').textContent = doctorProfile.hospital_affiliation || 'N/A';
+    if (document.getElementById('profile-avatar')) document.getElementById('profile-avatar').textContent = initials;
+    if (document.getElementById('profile-full-name')) document.getElementById('profile-full-name').textContent = `${doctorProfile.user.first_name} ${doctorProfile.user.last_name}`;
+    if (document.getElementById('doctor-name')) document.getElementById('doctor-name').textContent = `${doctorProfile.user.first_name} ${doctorProfile.user.last_name}`;
+    if (document.getElementById('profile-specialization')) document.getElementById('profile-specialization').textContent = doctorProfile.specialization;
+    if (document.getElementById('profile-email')) document.getElementById('profile-email').textContent = doctorProfile.user.email;
+    if (document.getElementById('profile-phone')) document.getElementById('profile-phone').textContent = doctorProfile.user.phone_number || 'N/A';
+    if (document.getElementById('profile-license')) document.getElementById('profile-license').textContent = doctorProfile.license_number;
+    if (document.getElementById('profile-qualification')) document.getElementById('profile-qualification').textContent = doctorProfile.qualification;
+    if (document.getElementById('profile-experience')) document.getElementById('profile-experience').textContent = doctorProfile.experience_years;
+    if (document.getElementById('profile-fee')) document.getElementById('profile-fee').textContent = doctorProfile.consultation_fee;
+    if (document.getElementById('profile-hospital')) document.getElementById('profile-hospital').textContent = doctorProfile.hospital_affiliation || 'N/A';
 
-    const availBadge = document.getElementById('profile-availability');
-    if (doctorProfile.is_available) {
-        availBadge.textContent = 'Available';
-        availBadge.className = 'badge badge-success';
-    } else {
-        availBadge.textContent = 'Unavailable';
-        availBadge.className = 'badge badge-danger';
+    const b = document.getElementById('profile-availability');
+    if (b) {
+        b.textContent = doctorProfile.is_available ? 'Available' : 'Unavailable';
+        b.className = `badge ${doctorProfile.is_available ? 'badge-success' : 'badge-danger'}`;
     }
 }
 
-function displayProfile() {
-    updateProfileDisplay();
-}
-
-// Dashboard Data
 async function loadDashboardData() {
-    try {
-        await loadAllAppointments();
-        updateDashboardStats();
-        displayTodaySchedule();
-    } catch (error) {
-        console.error('Error loading dashboard:', error);
-    }
+    await loadAllAppointments();
+    updateDashboardStats();
+    displayTodaySchedule();
 }
 
 function updateDashboardStats() {
     const today = new Date().toISOString().split('T')[0];
+    const tApts = appointments.filter(a => a.appointment_date === today);
+    const pApts = appointments.filter(a => a.status === 'scheduled');
+    const cApts = appointments.filter(a => a.appointment_date === today && a.status === 'completed');
+    const uPts = new Set(appointments.map(a => a.patient.id));
 
-    const todayAppointments = appointments.filter(apt =>
-        apt.appointment_date === today
-    );
-
-    const pendingAppointments = appointments.filter(apt =>
-        apt.status === 'scheduled'
-    );
-
-    const completedToday = appointments.filter(apt =>
-        apt.appointment_date === today && apt.status === 'completed'
-    );
-
-    // Get unique patients
-    const uniquePatients = new Set(appointments.map(apt => apt.patient.id));
-
-    document.getElementById('today-appointments').textContent = todayAppointments.length;
-    document.getElementById('total-patients').textContent = uniquePatients.size;
-    document.getElementById('pending-appointments').textContent = pendingAppointments.length;
-    document.getElementById('completed-today').textContent = completedToday.length;
+    if (document.getElementById('today-appointments')) document.getElementById('today-appointments').textContent = tApts.length;
+    if (document.getElementById('total-patients')) document.getElementById('total-patients').textContent = uPts.size;
+    if (document.getElementById('pending-appointments')) document.getElementById('pending-appointments').textContent = pApts.length;
+    if (document.getElementById('completed-today')) document.getElementById('completed-today').textContent = cApts.length;
 }
 
 function displayTodaySchedule() {
     const today = new Date().toISOString().split('T')[0];
-    const todayAppointments = appointments.filter(apt =>
-        apt.appointment_date === today
-    ).sort((a, b) => a.appointment_time.localeCompare(b.appointment_time));
-
+    const tApts = appointments.filter(a => a.appointment_date === today).sort((a, b) => a.appointment_time.localeCompare(b.appointment_time));
     const tbody = document.getElementById('today-schedule');
+    if (!tbody) return;
 
-    if (todayAppointments.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="5" class="text-center">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📅</div>
-                        <p>No appointments scheduled for today</p>
-                    </div>
-                </td>
-            </tr>
-        `;
+    if (tApts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:3rem; opacity:0.5;">No appointments scheduled for today</td></tr>';
         return;
     }
-
-    tbody.innerHTML = todayAppointments.map(apt => `
+    tbody.innerHTML = tApts.map(a => `
         <tr>
-            <td>${formatTime(apt.appointment_time)}</td>
-            <td>${apt.patient.first_name} ${apt.patient.last_name}</td>
-            <td>${apt.reason}</td>
-            <td>${getStatusBadge(apt.status)}</td>
+            <td>${formatTime(a.appointment_time)}</td>
+            <td>${a.patient.first_name} ${a.patient.last_name}</td>
+            <td>${a.reason}</td>
+            <td>${getStatusBadge(a.status)}</td>
             <td>
-                <div class="action-buttons">
-                    <button class="btn btn-sm btn-primary" onclick="viewAppointment(${apt.id})">View</button>
-                    ${apt.status === 'scheduled' ? `
-                        <button class="btn btn-sm btn-secondary" onclick="completeAppointment(${apt.id})">Complete</button>
-                    ` : ''}
+                <div style="display:flex; gap:0.5rem;">
+                    <button class="btn btn-sm btn-primary" onclick="viewAppointment(${a.id})">View</button>
+                    ${a.status === 'scheduled' ? `<button class="btn btn-sm btn-success" onclick="completeAppointment(${a.id})">Complete</button>` : ''}
                 </div>
             </td>
         </tr>
     `).join('');
 }
 
-// Appointments
 async function loadAllAppointments() {
     try {
-        const response = await fetch(`${API_BASE}/appointments/`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-            }
+        const r = await fetch(`${API_BASE}/appointments/`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
-
-        if (response.ok) {
-            const data = await response.json();
-            appointments = data.results || data;
+        if (r.ok) {
+            const d = await r.json();
+            appointments = d.results || d;
             displayAppointments();
         }
-    } catch (error) {
-        console.error('Error loading appointments:', error);
-        showNotification('Error loading appointments', 'error');
-    }
+    } catch (e) { showNotification('Error loading appointments', 'error'); }
 }
 
 function displayAppointments() {
     const tbody = document.getElementById('appointments-table');
+    if (!tbody) return;
+    let fApts = [...appointments];
+    const s = document.getElementById('appointment-status-filter')?.value;
+    const d = document.getElementById('appointment-date-filter')?.value;
+    const q = document.getElementById('appointment-search')?.value.toLowerCase();
 
-    if (appointments.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="text-center">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📋</div>
-                        <p>No appointments found</p>
-                    </div>
-                </td>
-            </tr>
-        `;
+    if (s) fApts = fApts.filter(a => a.status === s);
+    if (d) fApts = fApts.filter(a => a.appointment_date === d);
+    if (q) fApts = fApts.filter(a => `${a.patient.first_name} ${a.patient.last_name}`.toLowerCase().includes(q));
+
+    if (fApts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:3rem; opacity:0.5;">No matching appointments found</td></tr>';
         return;
     }
-
-    let filteredAppointments = [...appointments];
-
-    // Apply filters
-    const statusFilter = document.getElementById('appointment-status-filter')?.value;
-    const dateFilter = document.getElementById('appointment-date-filter')?.value;
-    const searchFilter = document.getElementById('appointment-search')?.value.toLowerCase();
-
-    if (statusFilter) {
-        filteredAppointments = filteredAppointments.filter(apt => apt.status === statusFilter);
-    }
-
-    if (dateFilter) {
-        filteredAppointments = filteredAppointments.filter(apt => apt.appointment_date === dateFilter);
-    }
-
-    if (searchFilter) {
-        filteredAppointments = filteredAppointments.filter(apt =>
-            `${apt.patient.first_name} ${apt.patient.last_name}`.toLowerCase().includes(searchFilter)
-        );
-    }
-
-    tbody.innerHTML = filteredAppointments.map(apt => `
+    tbody.innerHTML = fApts.map(a => `
         <tr>
-            <td>${formatDate(apt.appointment_date)} ${formatTime(apt.appointment_time)}</td>
-            <td>${apt.patient.first_name} ${apt.patient.last_name}</td>
-            <td>${apt.patient.phone_number || 'N/A'}</td>
-            <td>${apt.reason}</td>
-            <td>${getStatusBadge(apt.status)}</td>
+            <td>${formatDate(a.appointment_date)} ${formatTime(a.appointment_time)}</td>
+            <td>${a.patient.first_name} ${a.patient.last_name}</td>
+            <td>${a.patient.phone_number || 'N/A'}</td>
+            <td>${a.reason}</td>
+            <td>${getStatusBadge(a.status)}</td>
             <td>
-                <div class="action-buttons">
-                    <button class="btn btn-sm btn-primary" onclick="viewAppointment(${apt.id})">View Details</button>
-                    ${apt.status === 'scheduled' ? `
-                        <button class="btn btn-sm btn-secondary" onclick="completeAppointment(${apt.id})">Complete</button>
-                        <button class="btn btn-sm btn-danger" onclick="cancelAppointment(${apt.id})">Cancel</button>
-                    ` : ''}
+                <div style="display:flex; gap:0.5rem;">
+                    <button class="btn btn-sm btn-primary" onclick="viewAppointment(${a.id})">Details</button>
+                    ${a.status === 'scheduled' ? `
+                        <button class="btn btn-sm btn-success" onclick="completeAppointment(${a.id})">Complete</button>
+                        <button class="btn btn-sm btn-danger" onclick="cancelAppointment(${a.id})">Cancel</button>
+                    `: ''}
                 </div>
             </td>
         </tr>
     `).join('');
 }
 
+function viewAppointment(id) {
+    const a = appointments.find(x => x.id === id);
+    if (!a) return;
+    const d = document.getElementById('appointment-details');
+    if (d) {
+        d.innerHTML = `
+            <div style="margin-bottom:2rem;">
+                <h4 style="margin-bottom:1rem; color:var(--gov-blue);">SUBJECT PROFILE</h4>
+                <p><strong>Name:</strong> ${a.patient.first_name} ${a.patient.last_name}</p>
+                <p><strong>Email:</strong> ${a.patient.email}</p>
+                <p><strong>Phone:</strong> ${a.patient.phone_number || 'N/A'}</p>
+            </div>
+            <div>
+                <h4 style="margin-bottom:1rem; color:var(--gov-blue);">SESSION INTEL</h4>
+                <p><strong>Timing:</strong> ${formatDate(a.appointment_date)} @ ${formatTime(a.appointment_time)}</p>
+                <p><strong>Reason:</strong> ${a.reason}</p>
+                <p><strong>Status:</strong> ${getStatusBadge(a.status)}</p>
+                ${a.notes ? `<p><strong>Notes:</strong> ${a.notes}</p>` : ''}
+            </div>
+            ${a.medical_record_id ? `<button class="btn btn-success" style="margin-top:2rem; width:100%;" onclick="printPrescription(${a.medical_record_id})">📄 GET PRESCRIPTION PDF</button>` : ''}
+        `;
+        openModal('appointment-modal');
+    }
+}
+
+function openModal(id) { document.getElementById(id)?.classList.add('active'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('active'); }
+
 async function completeAppointment(id) {
-    // Ask for confirmation before proceeding
-    if (!confirm('Please complete the medical record for this appointment. Do you want to proceed?')) {
-        return;
-    }
-
-    const appointment = appointments.find(a => a.id === id);
-    if (!appointment) return;
-
-    // Set high-level state so we know which appointment to complete after saving record
+    if (!confirm('Initialize Diagnostic Archive for this subject?')) return;
+    const a = appointments.find(x => x.id === id);
+    if (!a) return;
     activeAppointmentId = id;
-
-    // Ensure patients array is populated from appointments if needed
-    if (patients.length === 0) {
-        patients = appointments
-            .map(apt => apt.patient)
-            .filter((patient, index, self) =>
-                index === self.findIndex(p => p.id === patient.id)
-            );
+    const s = document.getElementById('record-patient');
+    if (s) {
+        s.innerHTML = `<option value="${a.patient.id}">${a.patient.first_name} ${a.patient.last_name}</option>`;
+        s.value = a.patient.id;
+        s.disabled = true;
     }
-
-    // Populate patient dropdown with only the appointment's patient and disable it
-    const patientSelect = document.getElementById('record-patient');
-    if (patientSelect) {
-        // Only show the appointment's patient and make it disabled
-        patientSelect.innerHTML = `<option value="${appointment.patient.id}">${appointment.patient.first_name} ${appointment.patient.last_name}</option>`;
-        patientSelect.value = appointment.patient.id;
-        patientSelect.disabled = true;
-    }
-
-    // Set a helper text to show we're completing an appointment
-    const modalTitle = document.querySelector('#create-record-modal h3');
-    if (modalTitle) {
-        modalTitle.textContent = `Complete Appointment - Create Medical Record`;
-    }
-
-    // Open the modal
-    document.getElementById('create-record-modal').classList.add('active');
+    openModal('create-record-modal');
 }
 
 async function cancelAppointment(id) {
-    if (!confirm('Cancel this appointment?')) return;
-
+    if (!confirm('Abort this planned session?')) return;
     try {
-        const response = await fetch(`${API_BASE}/appointments/${id}/`, {
+        const r = await fetch(`${API_BASE}/appointments/${id}/`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ status: 'cancelled' })
         });
-
-        if (response.ok) {
-            showNotification('Appointment cancelled', 'success');
-            await loadAllAppointments();
+        if (r.ok) {
+            showNotification('Session Aborted', 'success');
+            loadAllAppointments();
             updateDashboardStats();
         }
-    } catch (error) {
-        console.error('Error cancelling appointment:', error);
-        showNotification('Error cancelling appointment', 'error');
-    }
+    } catch (e) { showNotification('Abort failed', 'error'); }
 }
 
-function viewAppointment(id) {
-    const appointment = appointments.find(apt => apt.id === id);
-    if (!appointment) return;
-
-    const modal = document.getElementById('appointment-modal');
-    const details = document.getElementById('appointment-details');
-
-    details.innerHTML = `
-        <div>
-            <h4>Patient Information</h4>
-            <p><strong>Name:</strong> ${appointment.patient ? `${appointment.patient.first_name} ${appointment.patient.last_name}` : 'Unknown'}</p>
-            <p><strong>Email:</strong> ${appointment.patient ? appointment.patient.email : 'N/A'}</p>
-            <p><strong>Phone:</strong> ${appointment.patient && appointment.patient.phone_number ? appointment.patient.phone_number : 'N/A'}</p>
-        </div>
-        <hr>
-        <div>
-            <h4>Appointment Details</h4>
-            <p><strong>Date:</strong> ${formatDate(appointment.appointment_date)}</p>
-            <p><strong>Time:</strong> ${formatTime(appointment.appointment_time)}</p>
-            <p><strong>Reason:</strong> ${appointment.reason}</p>
-            <p><strong>Status:</strong> ${getStatusBadge(appointment.status)}</p>
-            ${appointment.notes ? `<p><strong>Notes:</strong> ${appointment.notes}</p>` : ''}
-            ${appointment.medical_record_id ?
-            `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                    <button class="btn btn-success" onclick="printPrescription(${appointment.medical_record_id})">
-                        📄 Download Prescription PDF
-                    </button>
-                </div>`
-            : ''}
-        </div>
-    `;
-
-    modal.classList.add('active');
-}
-
-// Patients
 async function loadPatients() {
-    try {
-        // Get unique patients from appointments
-        const uniquePatientIds = [...new Set(appointments.map(apt => apt.patient.id))];
-        patients = appointments
-            .map(apt => apt.patient)
-            .filter((patient, index, self) =>
-                index === self.findIndex(p => p.id === patient.id)
-            );
-
-        displayPatients();
-    } catch (error) {
-        console.error('Error loading patients:', error);
-    }
+    patients = appointments.map(a => a.patient).filter((p, i, self) => i === self.findIndex(x => x.id === p.id));
+    displayPatients();
 }
 
 function displayPatients() {
-    const container = document.getElementById('patients-list');
+    const c = document.getElementById('patients-list');
+    if (!c) return;
+    let fP = [...patients];
+    const q = document.getElementById('patient-search')?.value.toLowerCase();
+    if (q) fP = fP.filter(p => `${p.first_name} ${p.last_name}`.toLowerCase().includes(q) || p.email.toLowerCase().includes(q));
 
-    if (patients.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">👥</div>
-                <p>No patients found</p>
-            </div>
-        `;
+    if (fP.length === 0) {
+        c.innerHTML = '<div style="text-align:center; padding:4rem; opacity:0.5;">No subjects found in database</div>';
         return;
     }
-
-    let filteredPatients = [...patients];
-    const searchFilter = document.getElementById('patient-search')?.value.toLowerCase();
-
-    if (searchFilter) {
-        filteredPatients = filteredPatients.filter(patient =>
-            `${patient.first_name} ${patient.last_name}`.toLowerCase().includes(searchFilter) ||
-            patient.email.toLowerCase().includes(searchFilter) ||
-            (patient.phone_number && patient.phone_number.includes(searchFilter))
-        );
-    }
-
-    container.innerHTML = filteredPatients.map(patient => {
-        const patientAppointments = appointments.filter(apt => apt.patient.id === patient.id);
-        return `
-            <div class="patient-card">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h4>${patient.first_name} ${patient.last_name}</h4>
-                        <p style="color: var(--text-muted); font-size: 0.875rem;">
-                            📧 ${patient.email} | 📞 ${patient.phone_number || 'N/A'}
-                        </p>
-                    </div>
-                    <div>
-                        <span class="badge badge-info">${patientAppointments.length} appointments</span>
-                        <button class="btn btn-sm btn-primary" onclick="viewPatientHistory(${patient.id})">View History</button>
-                    </div>
-                </div>
+    c.innerHTML = fP.map(p => `
+        <div class="patient-card">
+            <div>
+                <h4 style="color:var(--gov-blue);">${p.first_name} ${p.last_name}</h4>
+                <p style="font-size:0.9rem; opacity:0.6;">${p.email} | ${p.phone_number || 'N/A'}</p>
             </div>
-        `;
-    }).join('');
+            <button class="btn btn-sm btn-primary" onclick="viewPatientHistory(${p.id})">ACCESS LOGS</button>
+        </div>
+    `).join('');
 }
 
-async function viewPatientHistory(patientId) {
+async function viewPatientHistory(pid) {
     try {
-        const response = await fetch(`${API_BASE}/medical-records/patient_history/?patient_id=${patientId}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-            }
+        const r = await fetch(`${API_BASE}/medical-records/patient_history/?patient_id=${pid}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
+        if (r.ok) {
+            const h = await r.json();
+            const p = patients.find(x => x.id === pid);
+            if (document.getElementById('patient-history-name')) document.getElementById('patient-history-name').textContent = `${p.first_name} ${p.last_name}`;
+            const c = document.getElementById('patient-history-content');
+            if (!c) return;
 
-        if (response.ok) {
-            const history = await response.json();
-            displayPatientHistoryModal(history, patientId);
-        } else {
-            const errorText = await response.text();
-            console.error('Patient history error:', response.status, errorText);
-            showNotification(`Error loading patient history: ${response.status}`, 'error');
-        }
-    } catch (error) {
-        console.error('Error loading patient history:', error);
-        showNotification('Error loading patient history: ' + error.message, 'error');
-    }
-}
-
-function displayPatientHistoryModal(history, patientId) {
-    const patient = patients.find(p => p.id === patientId);
-    const modal = document.getElementById('patient-history-modal');
-    const content = document.getElementById('patient-history-content');
-
-    if (!modal || !content) return;
-
-    const patientName = patient ? `${patient.first_name} ${patient.last_name}` : 'Patient';
-    document.getElementById('patient-history-name').textContent = patientName;
-
-    if (history.length === 0) {
-        content.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">📋</div>
-                <p>No medical history found</p>
-            </div>
-        `;
-    } else {
-        content.innerHTML = history.map(record => `
-            <div class="history-record">
-                <div class="history-header">
-                    <h4>${formatDate(record.created_at)}</h4>
-                    ${record.doctor_name ?
-                `<span class="badge badge-info">Dr. ${record.doctor_name}</span>` :
-                '<span class="badge badge-secondary">Doctor info unavailable</span>'}
-                </div>
-                <div class="history-body">
-                    <p><strong>Diagnosis:</strong> ${record.diagnosis}</p>
-                    <p><strong>Symptoms:</strong> ${record.symptoms}</p>
-                    <p><strong>Treatment:</strong> ${record.treatment_plan}</p>
-                    ${record.prescriptions && record.prescriptions.length > 0 ? `
-                        <div class="prescriptions-section">
-                            <h5>Prescriptions:</h5>
-                            ${record.prescriptions.map(rx => `
-                                <div class="prescription-item">
-                                    <strong>${rx.medication_name}</strong> - ${rx.dosage}<br>
-                                    <small>${rx.frequency} for ${rx.duration}</small>
-                                    ${rx.instructions ? `<br><small>Instructions: ${rx.instructions}</small>` : ''}
-                                </div>
-                            `).join('')}
+            if (h.length === 0) {
+                c.innerHTML = '<p style="text-align:center; padding:3rem; opacity:0.5;">No archived logs for this subject</p>';
+            } else {
+                c.innerHTML = h.map(x => `
+                    <div style="border:1px solid #f1f5f9; padding:2rem; margin-bottom:1.5rem; background:#fafafa;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+                            <h4 style="color:var(--gov-blue);">${formatDate(x.created_at)}</h4>
+                            <span class="badge badge-info">Dr. ${x.doctor_name || 'System'}</span>
                         </div>
-                    ` : ''}
-                    ${record.notes ? `<p><strong>Notes:</strong> ${record.notes}</p>` : ''}
-                </div>
-                <button class="btn btn-sm btn-secondary" onclick="printPrescription(${record.id})">Print Prescription</button>
-            </div>
-        `).join('');
-    }
-
-    modal.classList.add('active');
+                        <p><strong>Diagnosis:</strong> ${x.diagnosis}</p>
+                        <p><strong>Symptoms:</strong> ${x.symptoms}</p>
+                        <p style="margin-top:1rem;"><strong>Treatment:</strong> ${x.treatment_plan}</p>
+                        ${x.prescriptions && x.prescriptions.length > 0 ? `
+                            <div style="margin-top:1.5rem; background:white; padding:1rem; border-radius:4px;">
+                                <label style="font-size:0.7rem; font-weight:800; opacity:0.5;">PHARMACEUTICALS</label>
+                                ${x.prescriptions.map(m => `<div style="padding:0.5rem 0; border-bottom:1px solid #f1f5f9;"><strong>${m.medication_name}</strong> - ${m.dosage} (${m.frequency})</div>`).join('')}
+                            </div>
+                        `: ''}
+                        <button class="btn btn-sm btn-success" style="margin-top:1.5rem;" onclick="printPrescription(${x.id})">PRINT LOG</button>
+                    </div>
+                `).join('');
+            }
+            openModal('patient-history-modal');
+        }
+    } catch (e) { showNotification('Access Denied', 'error'); }
 }
 
-// Medical Records
 async function loadMedicalRecords() {
     try {
-        const response = await fetch(`${API_BASE}/medical-records/`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-            }
+        const r = await fetch(`${API_BASE}/medical-records/`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
-
-        if (response.ok) {
-            const data = await response.json();
-            records = data.results || data;
+        if (r.ok) {
+            const d = await r.json();
+            records = d.results || d;
             displayMedicalRecords();
         }
-    } catch (error) {
-        console.error('Error loading medical records:', error);
-        showNotification('Error loading medical records', 'error');
-    }
+    } catch (e) { showNotification('Archive failure', 'error'); }
 }
 
 function displayMedicalRecords() {
-    const container = document.getElementById('records-list');
-
+    const c = document.getElementById('records-list');
+    if (!c) return;
     if (records.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">📋</div>
-                <p>No medical records found</p>
-            </div>
-        `;
+        c.innerHTML = '<div style="text-align:center; padding:4rem; opacity:0.5;">Archive is empty</div>';
         return;
     }
-
-    container.innerHTML = records.map(record => `
-        <div class="card mb-2">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h4>${record.patient ? `${record.patient.first_name} ${record.patient.last_name}` : 'Unknown Patient'}</h4>
-                    <p style="color: var(--text-muted);">${formatDate(record.created_at)}</p>
-                    <p><strong>Diagnosis:</strong> ${record.diagnosis}</p>
-                </div>
-                <button class="btn btn-sm btn-success" onclick="printPrescription(${record.id})">
-                    📄 Download Prescription PDF
-                </button>
+    c.innerHTML = records.map(r => `
+        <div class="ultra-card" style="padding:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <h4 style="color:var(--gov-blue);">${r.patient ? `${r.patient.first_name} ${r.patient.last_name}` : 'Unknown Subject'}</h4>
+                <p style="opacity:0.6; font-size:0.9rem;">${formatDate(r.created_at)} | ${r.diagnosis}</p>
             </div>
+            <button class="btn btn-sm btn-success" onclick="printPrescription(${r.id})">📄 GET PDF</button>
         </div>
     `).join('');
 }
 
 function openCreateRecordModal() {
-    // Reset state in case we were in a completion flow
     activeAppointmentId = null;
-    const modalTitle = document.querySelector('#create-record-modal h3');
-    if (modalTitle) {
-        modalTitle.textContent = 'Create Medical Record';
+    const s = document.getElementById('record-patient');
+    if (s) {
+        s.innerHTML = '<option value="">Select Subject</option>' + patients.map(p => `<option value="${p.id}">${p.first_name} ${p.last_name}</option>`).join('');
+        s.disabled = false;
     }
-
-    // Populate patient dropdown and enable it
-    const patientSelect = document.getElementById('record-patient');
-    patientSelect.innerHTML = '<option value="">Select Patient</option>' +
-        patients.map(p => `<option value="${p.id}">${p.first_name} ${p.last_name}</option>`).join('');
-    patientSelect.disabled = false; // Re-enable the dropdown
-
-    document.getElementById('create-record-modal').classList.add('active');
+    document.getElementById('create-record-form')?.reset();
+    if (document.getElementById('prescriptions-container')) document.getElementById('prescriptions-container').innerHTML = '';
+    openModal('create-record-modal');
 }
 
-
-
-// Unavailability
 async function loadUnavailability() {
     try {
-        const response = await fetch(`${API_BASE}/unavailability/`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-            }
+        const r = await fetch(`${API_BASE}/unavailability/`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
-
-        if (response.ok) {
-            const data = await response.json();
-            unavailabilityPeriods = data.results || data;
+        if (r.ok) {
+            const d = await r.json();
+            unavailabilityPeriods = d.results || d;
             displayUnavailability();
         }
-    } catch (error) {
-        console.error('Error loading unavailability:', error);
-        showNotification('Error loading unavailability periods', 'error');
-    }
+    } catch (e) { }
 }
 
 function displayUnavailability() {
-    const container = document.getElementById('unavailability-list');
-
+    const c = document.getElementById('unavailability-list');
+    if (!c) return;
     if (unavailabilityPeriods.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">⏰</div>
-                <p>No unavailability periods set</p>
-            </div>
-        `;
+        c.innerHTML = '<div style="text-align:center; padding:4rem; opacity:0.5;">No blocks active</div>';
         return;
     }
-
-    container.innerHTML = unavailabilityPeriods.map(period => `
-        <div class="unavailability-item">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h4>${period.reason}</h4>
-                    <p>${formatDate(period.start_date)} to ${formatDate(period.end_date)}</p>
-                    ${period.start_time ? `<p class="text-xs text-muted">Time: ${formatTime(period.start_time)} - ${formatTime(period.end_time)}</p>` : ''}
-                    ${period.is_recurring ? `<p class="text-xs text-info">Recurring: ${period.recurrence_pattern}</p>` : ''}
-                </div>
-                <button class="btn btn-sm btn-danger" onclick="deleteUnavailability(${period.id})">Delete</button>
+    c.innerHTML = unavailabilityPeriods.map(p => `
+        <div class="unavailability-item" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <h4 style="color:var(--gov-blue);">${p.reason}</h4>
+                <p style="font-size:0.9rem; opacity:0.7;">${formatDate(p.start_date)} to ${formatDate(p.end_date)}</p>
+                ${p.start_time ? `<p style="font-size:0.8rem; opacity:0.5;">Time: ${formatTime(p.start_time)} - ${formatTime(p.end_time)}</p>` : ''}
             </div>
+            <button class="btn btn-sm btn-danger" onclick="deleteUnavailability(${p.id})">REMOVE</button>
         </div>
     `).join('');
 }
 
-function openUnavailabilityModal() {
-    document.getElementById('unavailability-modal').classList.add('active');
-}
+function openUnavailabilityModal() { openModal('unavailability-modal'); }
 
 async function deleteUnavailability(id) {
-    if (!confirm('Delete this unavailability period?')) return;
-
+    if (!confirm('Lift this schedule block?')) return;
     try {
-        const response = await fetch(`${API_BASE}/unavailability/${id}/`, {
+        const r = await fetch(`${API_BASE}/unavailability/${id}/`, {
             method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-            }
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
-
-        if (response.ok) {
-            showNotification('Unavailability period deleted', 'success');
-            await loadUnavailability();
-        }
-    } catch (error) {
-        console.error('Error deleting unavailability:', error);
-        showNotification('Error deleting unavailability period', 'error');
-    }
+        if (r.ok) { showNotification('Block Lifted', 'success'); loadUnavailability(); }
+    } catch (e) { }
 }
 
-// Event Listeners
 function setupEventListeners() {
-    // Appointment filters
-    const appointmentStatusFilter = document.getElementById('appointment-status-filter');
-    const appointmentDateFilter = document.getElementById('appointment-date-filter');
-    const appointmentSearch = document.getElementById('appointment-search');
+    ['appointment-status-filter', 'appointment-date-filter', 'appointment-search'].forEach(id => {
+        document.getElementById(id)?.addEventListener('change', displayAppointments);
+        document.getElementById(id)?.addEventListener('input', displayAppointments);
+    });
+    document.getElementById('patient-search')?.addEventListener('input', displayPatients);
 
-    if (appointmentStatusFilter) appointmentStatusFilter.addEventListener('change', displayAppointments);
-    if (appointmentDateFilter) appointmentDateFilter.addEventListener('change', displayAppointments);
-    if (appointmentSearch) appointmentSearch.addEventListener('input', displayAppointments);
+    document.getElementById('create-record-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await finalizeRecord();
+    });
 
-    // Patient search
-    const patientSearch = document.getElementById('patient-search');
-    if (patientSearch) patientSearch.addEventListener('input', displayPatients);
-
-    // Forms
-    const createRecordForm = document.getElementById('create-record-form');
-    if (createRecordForm) {
-        createRecordForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
-            await createMedicalRecord();
-        });
-    }
-
-    const unavailabilityForm = document.getElementById('unavailability-form');
-    if (unavailabilityForm) {
-        unavailabilityForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
-            await createUnavailability();
-        });
-    }
+    document.getElementById('unavailability-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await finalizeUnavailability();
+    });
 }
 
-async function createMedicalRecord() {
+async function finalizeRecord() {
     const data = {
         patient_id: document.getElementById('record-patient').value,
         symptoms: document.getElementById('record-symptoms').value,
@@ -698,334 +424,8 @@ async function createMedicalRecord() {
         appointment: activeAppointmentId,
         prescriptions: getPrescriptions()
     };
-
     try {
-        const response = await fetch(`${API_BASE}/medical-records/`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        });
-
-        if (response.ok) {
-            // If this was part of an appointment completion, call the completion API
-            if (activeAppointmentId) {
-                await fetch(`${API_BASE}/appointments/${activeAppointmentId}/complete/`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                        'Content-Type': 'application/json',
-                    }
-                });
-                showNotification('Appointment completed and medical record saved', 'success');
-            } else {
-                showNotification('Medical record created successfully', 'success');
-            }
-
-            closeModal('create-record-modal');
-            document.getElementById('create-record-form').reset();
-
-            // Reset state
-            activeAppointmentId = null;
-            const modalTitle = document.querySelector('#create-record-modal h3');
-            if (modalTitle) {
-                modalTitle.textContent = 'Create Medical Record';
-            }
-
-            await loadMedicalRecords();
-            await loadAllAppointments();
-            updateDashboardStats();
-        }
-    } catch (error) {
-        console.error('Error creating medical record:', error);
-        showNotification('Error creating medical record', 'error');
-    }
-}
-
-async function createUnavailability() {
-    const data = {
-        start_date: document.getElementById('unavail-start').value,
-        end_date: document.getElementById('unavail-end').value,
-        reason: document.getElementById('unavail-reason').value,
-    };
-
-    try {
-        const response = await fetch(`${API_BASE}/unavailability/`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        });
-
-        if (response.ok) {
-            showNotification('Unavailability period added', 'success');
-            closeModal('unavailability-modal');
-            document.getElementById('unavailability-form').reset();
-            await loadUnavailability();
-        }
-    } catch (error) {
-        console.error('Error creating unavailability:', error);
-        showNotification('Error adding unavailability period', 'error');
-    }
-}
-
-// Utility Functions
-function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('active');
-}
-
-function showNotification(message, type = 'success') {
-    const notification = document.getElementById('notification');
-    notification.textContent = message;
-    notification.className = `notification ${type} show`;
-
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 3000);
-}
-
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
-}
-
-function formatTime(timeString) {
-    const [hours, minutes] = timeString.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
-}
-
-function getStatusBadge(status) {
-    const badges = {
-        'scheduled': '<span class="badge badge-info">Scheduled</span>',
-        'completed': '<span class="badge badge-success">Completed</span>',
-        'cancelled': '<span class="badge badge-danger">Cancelled</span>',
-        'no_show': '<span class="badge badge-warning">No Show</span>',
-    };
-    return badges[status] || status;
-}
-
-function getCurrentUserId() {
-    return typeof CURRENT_USER_ID !== 'undefined' ? CURRENT_USER_ID : 0;
-}
-
-// Prescription Management Functions
-function addMedicineRow() {
-    const template = document.getElementById('medicine-row-template');
-    const container = document.getElementById('prescriptions-container');
-    const clone = template.content.cloneNode(true);
-
-    // Add event listener for frequency change
-    const frequencySelect = clone.querySelector('.medicine-frequency');
-    frequencySelect.onchange = function () {
-        updateTimingOptions(this);
-    };
-
-    container.appendChild(clone);
-}
-
-function updateTimingOptions(select) {
-    const row = select.closest('.medicine-row');
-    const timingsContainer = row.querySelector('.medicine-timings-container');
-    const frequency = select.value;
-
-    let count = 1;
-    if (frequency === 'Twice daily') count = 2;
-    else if (frequency === 'Thrice daily') count = 3;
-    else if (frequency === 'Four times daily') count = 4;
-
-    const timingOptions = `
-        <option value="">Select timing</option>
-        <option value="Before breakfast">Before breakfast</option>
-        <option value="After breakfast">After breakfast</option>
-        <option value="Before lunch">Before lunch</option>
-        <option value="After lunch">After lunch</option>
-        <option value="Before dinner">Before dinner</option>
-        <option value="After dinner">After dinner</option>
-        <option value="At bedtime">At bedtime</option>
-        <option value="Empty stomach">Empty stomach</option>
-        <option value="With food">With food</option>
-    `;
-
-    // specific container style
-    timingsContainer.style.display = 'flex';
-    timingsContainer.style.flexDirection = 'column';
-    timingsContainer.style.gap = '0.5rem';
-
-    // Store existing values
-    const existingSelects = timingsContainer.querySelectorAll('select');
-    const existingValues = Array.from(existingSelects).map(s => s.value);
-
-    timingsContainer.innerHTML = '';
-
-    for (let i = 0; i < count; i++) {
-        const newSelect = document.createElement('select');
-        newSelect.className = 'form-select medicine-timing';
-        newSelect.innerHTML = timingOptions;
-        if (existingValues[i]) {
-            newSelect.value = existingValues[i];
-        } else if (i === 0 && existingValues.length > 0) {
-            newSelect.value = existingValues[0]; // Keep first value if decreasing count
-        }
-        timingsContainer.appendChild(newSelect);
-    }
-}
-
-function removeMedicineRow(button) {
-    button.closest('.medicine-row').remove();
-}
-
-function getPrescriptions() {
-    const prescriptions = [];
-    const medicineRows = document.querySelectorAll('.medicine-row');
-
-    medicineRows.forEach(row => {
-        const name = row.querySelector('.medicine-name').value.trim();
-        const dosage = row.querySelector('.medicine-dosage').value.trim();
-        const frequency = row.querySelector('.medicine-frequency').value;
-
-        // Get all timing values
-        const timingSelects = row.querySelectorAll('.medicine-timing');
-        const timingValues = Array.from(timingSelects)
-            .map(s => s.value)
-            .filter(v => v);
-        const timing = timingValues.join(', ');
-
-        const durationValue = row.querySelector('.medicine-duration-value').value;
-        const durationUnit = row.querySelector('.medicine-duration-unit').value;
-        const instructions = row.querySelector('.medicine-instructions').value.trim();
-
-        // Only add if medicine name is provided
-        if (name) {
-            const duration = durationValue ? `${durationValue} ${durationUnit}` : '';
-            const fullInstructions = timing ? `${timing}. ${instructions}`.trim() : instructions;
-
-            prescriptions.push({
-                medication_name: name,
-                dosage: dosage || 'As directed',
-                frequency: frequency || 'As directed',
-                duration: duration || 'As directed',
-                instructions: fullInstructions
-            });
-        }
-    });
-
-    return prescriptions;
-}
-
-async function printPrescription(recordId) {
-    try {
-        showNotification('Generating PDF...', 'info');
-        const response = await fetch(`${API_BASE}/medical-records/${recordId}/prescription_pdf/`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-            }
-        });
-
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            window.open(url, '_blank');
-            // Clean up the URL object after a delay
-            setTimeout(() => window.URL.revokeObjectURL(url), 10000);
-        } else {
-            console.error('PDF generation failed:', response.status);
-            showNotification('Error generating prescription PDF', 'error');
-        }
-    } catch (error) {
-        console.error('Error printing prescription:', error);
-        showNotification('Error printing prescription', 'error');
-    }
-}
-
-// Logout function
-async function logout() {
-    if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('authToken');
-        try {
-            // Attempt server-side logout but don't block
-            await fetch('/logout/', { method: 'GET' });
-        } catch (e) {
-            console.error('Server logout failed', e);
-        }
-        window.location.href = '/login/';
-    }
-}
-
-// Add Unavailability Logic
-document.addEventListener('DOMContentLoaded', () => {
-    const unavailForm = document.getElementById('unavailability-form');
-    if (unavailForm) {
-        unavailForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await addUnavailability();
-        });
-    }
-
-    // Auto-set recurrence and end date logic
-    const reasonInput = document.getElementById('unavail-reason');
-    const recurrenceSelect = document.getElementById('unavail-recurrence');
-    const endDateInput = document.getElementById('unavail-end');
-    const startDateInput = document.getElementById('unavail-start');
-
-    if (reasonInput) {
-        reasonInput.addEventListener('input', (e) => {
-            if (e.target.value.toLowerCase().includes('lunch')) {
-                recurrenceSelect.value = 'daily';
-                updateEndDate();
-            }
-        });
-    }
-
-    if (recurrenceSelect) {
-        recurrenceSelect.addEventListener('change', updateEndDate);
-    }
-
-    if (startDateInput) {
-        startDateInput.addEventListener('change', updateEndDate);
-    }
-
-    function updateEndDate() {
-        if (recurrenceSelect.value !== 'none') {
-            const start = startDateInput.value ? new Date(startDateInput.value) : new Date();
-            const future = new Date(start);
-            future.setFullYear(future.getFullYear() + 5); // 5 years from start
-            endDateInput.value = future.toISOString().split('T')[0];
-        }
-    }
-});
-
-async function addUnavailability() {
-    const start_date = document.getElementById('unavail-start').value;
-    const end_date = document.getElementById('unavail-end').value;
-    const reason = document.getElementById('unavail-reason').value;
-    const start_time = document.getElementById('unavail-start-time').value || null;
-    const end_time = document.getElementById('unavail-end-time').value || null;
-    const recurrence = document.getElementById('unavail-recurrence').value;
-
-    const data = {
-        start_date,
-        end_date,
-        reason,
-        start_time,
-        end_time,
-        is_recurring: recurrence !== 'none',
-        recurrence_pattern: recurrence
-    };
-
-    try {
-        const response = await fetch(`${API_BASE}/unavailability/`, {
+        const r = await fetch(`${API_BASE}/medical-records/`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -1033,19 +433,147 @@ async function addUnavailability() {
             },
             body: JSON.stringify(data)
         });
-
-        if (response.ok) {
-            showNotification('Unavailability period added', 'success');
-            document.getElementById('unavailability-modal').classList.remove('active');
-            document.getElementById('unavailability-form').reset();
-            await loadUnavailability();
-        } else {
-            const errorText = await response.text();
-            console.error('Error adding unavailability:', errorText);
-            showNotification('Error adding unavailability', 'error');
+        if (r.ok) {
+            if (activeAppointmentId) await fetch(`${API_BASE}/appointments/${activeAppointmentId}/complete/`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+            });
+            showNotification('Archive Entry Finalized', 'success');
+            closeModal('create-record-modal');
+            loadMedicalRecords(); loadAllAppointments(); updateDashboardStats();
         }
-    } catch (error) {
-        console.error('Error adding unavailability:', error);
-        showNotification('Error adding unavailability', 'error');
+    } catch (e) { showNotification('Entry failed', 'error'); }
+}
+
+async function finalizeUnavailability() {
+    const data = {
+        start_date: document.getElementById('unavail-start').value,
+        end_date: document.getElementById('unavail-end').value,
+        reason: document.getElementById('unavail-reason').value,
+        start_time: document.getElementById('unavail-start-time').value || null,
+        end_time: document.getElementById('unavail-end-time').value || null,
+        is_recurring: document.getElementById('unavail-recurrence').value !== 'none',
+        recurrence_pattern: document.getElementById('unavail-recurrence').value
+    };
+    try {
+        const r = await fetch(`${API_BASE}/unavailability/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        if (r.ok) {
+            showNotification('Block Initialized', 'success');
+            closeModal('unavailability-modal');
+            loadUnavailability();
+        }
+    } catch (e) { showNotification('Block failed', 'error'); }
+}
+
+function addMedicineRow() {
+    const t = document.getElementById('medicine-row-template');
+    const c = document.getElementById('prescriptions-container');
+    if (!t || !c) return;
+    const clone = t.content.cloneNode(true);
+    const sel = clone.querySelector('.medicine-frequency');
+    if (sel) sel.onchange = function () { updateTimingOptions(this); };
+    c.appendChild(clone);
+}
+
+function updateTimingOptions(sel) {
+    const row = sel.closest('.medicine-row');
+    const cont = row.querySelector('.medicine-timings-container');
+    if (!cont) return;
+    const val = sel.value;
+    let n = 1;
+    if (val === 'Twice daily') n = 2;
+    else if (val === 'Thrice daily') n = 3;
+    cont.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+        const s = document.createElement('select');
+        s.className = 'form-select medicine-timing';
+        s.innerHTML = `
+            <option value="After breakfast">After breakfast</option>
+            <option value="After lunch">After lunch</option>
+            <option value="After dinner">After dinner</option>
+            <option value="At bedtime">At bedtime</option>
+            <option value="Empty stomach">Empty stomach</option>
+        `;
+        cont.appendChild(s);
     }
+}
+
+function removeMedicineRow(btn) { btn.closest('.medicine-row').remove(); }
+
+function getPrescriptions() {
+    const rx = [];
+    document.querySelectorAll('.medicine-row').forEach(row => {
+        const name = row.querySelector('.medicine-name').value.trim();
+        if (name) {
+            const tims = Array.from(row.querySelectorAll('.medicine-timing')).map(s => s.value).filter(v => v).join(', ');
+            const dur = `${row.querySelector('.medicine-duration-value').value} ${row.querySelector('.medicine-duration-unit').value}`;
+            rx.push({
+                medication_name: name,
+                dosage: row.querySelector('.medicine-dosage').value || 'As directed',
+                frequency: row.querySelector('.medicine-frequency').value || 'As directed',
+                duration: dur,
+                instructions: `${tims}. ${row.querySelector('.medicine-instructions').value}`.trim()
+            });
+        }
+    });
+    return rx;
+}
+
+async function printPrescription(rid) {
+    showNotification('Generating PDF...', 'info');
+    try {
+        const r = await fetch(`${API_BASE}/medical-records/${rid}/prescription_pdf/`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+        });
+        if (r.ok) {
+            const b = await r.blob();
+            const u = window.URL.createObjectURL(b);
+            window.open(u, '_blank');
+        }
+    } catch (e) { showNotification('PDF generation failed', 'error'); }
+}
+
+async function logout() {
+    if (confirm('Terminate authenticated session?')) {
+        localStorage.removeItem('authToken');
+        window.location.href = '/login/';
+    }
+}
+
+function showNotification(msg, type = 'success') {
+    const n = document.getElementById('notification');
+    if (!n) {
+        // Fallback for standard alert
+        alert(msg);
+        return;
+    }
+    n.textContent = msg;
+    n.className = `notification ${type}`;
+    n.style.display = 'block';
+    setTimeout(() => n.style.display = 'none', 3000);
+}
+
+function formatDate(s) {
+    const d = new Date(s);
+    return d.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function formatTime(s) {
+    if (!s) return 'N/A';
+    const [h, m] = s.split(':');
+    const hr = parseInt(h);
+    const am = hr >= 12 ? 'PM' : 'AM';
+    return `${hr % 12 || 12}:${m} ${am}`;
+}
+
+function getStatusBadge(s) {
+    const m = { 'scheduled': 'info', 'completed': 'success', 'cancelled': 'danger', 'no_show': 'warning' };
+    return `<span class="badge badge-${m[s] || 'secondary'}">${s}</span>`;
 }

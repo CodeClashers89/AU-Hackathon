@@ -1,76 +1,301 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>City Staff Dashboard - DPI Platform</title>
+    <title>City Ops Terminal - DPI Platform</title>
     {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        :root {
+            --civic-green: #1e8449;
+            --gov-blue: #0B4F87;
+            --pure-white: #ffffff;
+            --light-bg: #f8fafc;
+            --accent-glow: rgba(11, 79, 135, 0.05);
+            --border-color: #e2e8f0;
+            --radius-lg: 4px;
+            --radius-md: 2px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: #0f172a;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 2.5rem 2rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+            letter-spacing: 2px;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 1.5rem 0;
+            list-style: none;
+        }
+
+        .sidebar-link {
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            text-decoration: none;
+            color: var(--gov-blue);
+            font-weight: 600;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+            opacity: 0.6;
+        }
+
+        .sidebar-link.active {
+            opacity: 1;
+            background: var(--accent-glow);
+            border-left-color: var(--gov-blue);
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            margin-left: 300px;
+            padding: 3rem 4%;
+        }
+
+        .section-header {
+            margin-bottom: 3rem;
+        }
+
+        .section-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+        }
+
+        /* --- Stats --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-bottom: 6px solid var(--gov-blue);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            border-radius: var(--radius-lg);
+        }
+
+        .stat-card.success {
+            border-color: var(--civic-green);
+        }
+
+        .stat-card.warning {
+            border-color: #f59e0b;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.5;
+            letter-spacing: 1px;
+        }
+
+        /* --- Cards --- */
+        .ultra-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.02);
+            border: 1px solid #f1f5f9;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            color: var(--gov-blue);
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        /* --- Tables --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1.2rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--gov-blue);
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: #475569;
+        }
+
+        /* --- Badges --- */
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 2px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            border: none;
+            transition: var(--transition);
+            border-radius: var(--radius-md);
+        }
+
+        .btn-primary {
+            background: var(--gov-blue);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+    </style>
 </head>
+
 <body>
-    <div class="dashboard">
-        <aside class="sidebar">
-            <div style="padding: 0 1.5rem; margin-bottom: 2rem;">
-                <h3 style="color: var(--primary-color);">🏙️ City Services</h3>
-                <p style="font-size: 0.875rem; color: var(--text-muted);">Staff Portal</p>
-            </div>
-            <ul class="sidebar-menu">
-                <li class="sidebar-item"><a href="#dashboard" class="sidebar-link active">📊 Dashboard</a></li>
-                <li class="sidebar-item"><a href="#complaints" class="sidebar-link">📋 Complaints</a></li>
-                <li class="sidebar-item"><a href="#responses" class="sidebar-link">💬 Responses</a></li>
-                <li class="sidebar-item"><a href="#" onclick="logout(); return false;" class="sidebar-link">🚪 Logout</a></li>
-            </ul>
-        </aside>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="logo">DPI.PLATFORM</a>
+            <p
+                style="font-size: 0.75rem; font-weight: 700; color: var(--civic-green); letter-spacing: 2px; text-transform: uppercase;">
+                City Staff Terminal</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item"><a href="#dashboard" class="sidebar-link active">📊 <span>Dashboard</span></a></li>
+            <li class="sidebar-item"><a href="#complaints" class="sidebar-link">📋 <span>Complaints</span></a></li>
+            <li class="sidebar-item"><a href="#responses" class="sidebar-link">💬 <span>Responses</span></a></li>
+            <li class="sidebar-item" style="margin-top: auto; border-top:1px solid #f1f5f9;"><a href="#"
+                    onclick="logout(); return false;" class="sidebar-link">🚪 <span>Logout</span></a></li>
+        </ul>
+    </aside>
 
-        <main class="main-content">
+    <main class="main-content">
+        <div class="section-header">
             <h1>City Staff Dashboard</h1>
-            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Manage public complaints and responses</p>
+            <p style="opacity:0.7;">Managing urban infrastructure alerts and public complaints.</p>
+        </div>
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value">42</div>
-                    <div class="stat-label">Pending Complaints</div>
-                </div>
-                <div class="stat-card success">
-                    <div class="stat-value">128</div>
-                    <div class="stat-label">Resolved This Month</div>
-                </div>
-                <div class="stat-card warning">
-                    <div class="stat-value">15</div>
-                    <div class="stat-label">In Progress</div>
-                </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">42</div>
+                <div class="stat-label">Pending Complaints</div>
             </div>
+            <div class="stat-card success">
+                <div class="stat-value">128</div>
+                <div class="stat-label">Resolved This Month</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-value">15</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+        </div>
 
-            <div class="card">
-                <h3>Recent Complaints</h3>
-                <div class="table-container">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Title</th>
-                                <th>Location</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="complaints-table">
-                            <tr>
-                                <td>CMP-001</td>
-                                <td>Street Light Not Working</td>
-                                <td>Main Street</td>
-                                <td><span class="badge badge-warning">Submitted</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary">View</button>
-                                    <button class="btn btn-sm btn-secondary">Respond</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
-    </div>
+        <div class="ultra-card">
+            <h3 class="card-title">Recent Complaints</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="complaints-table">
+                    <tr>
+                        <td>CMP-001</td>
+                        <td>Street Light Not Working</td>
+                        <td>Main Street</td>
+                        <td><span class="badge badge-warning">Submitted</span></td>
+                        <td>
+                            <button class="btn btn-primary">View</button>
+                            <button class="btn btn-secondary">Respond</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
     <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login/';
+        }
+    </script>
 </body>
+
 </html>

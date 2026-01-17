@@ -562,6 +562,9 @@ async function loadComplaints() {
 
         const complaints = response.results || response || [];
 
+        // Store city complaints globally
+        window.cityComplaints = complaints;
+
         if (complaints.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -575,17 +578,26 @@ async function loadComplaints() {
 
         container.innerHTML = complaints.map(complaint => `
             <div class="request-card">
-                <h4>${complaint.title}</h4>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h4>${complaint.title}</h4>
+                    <span class="badge badge-${complaint.status === 'resolved' ? 'success' : complaint.status === 'in_progress' ? 'warning' : 'info'}">
+                        ${complaint.status}
+                    </span>
+                </div>
                 <p style="color: var(--text-secondary); margin: 0.5rem 0;">
                     ${complaint.description}
                 </p>
                 <div class="request-meta">
                     <span class="badge badge-info">${complaint.complaint_id || 'Pending ID'}</span>
-                    <span class="badge badge-${complaint.status === 'resolved' ? 'success' : complaint.status === 'in_progress' ? 'warning' : 'info'}">
-                        ${complaint.status}
-                    </span>
                     ${complaint.location ? `<span class="badge badge-secondary">📍 ${complaint.location}</span>` : ''}
+                    <span class="badge badge-secondary">📅 ${new Date(complaint.created_at).toLocaleDateString()}</span>
                 </div>
+                
+                ${(complaint.status === 'in_progress' || complaint.status === 'resolved') ? `
+                    <button class="btn btn-sm btn-primary" style="margin-top: 1rem;" onclick="viewResponse('city', ${complaint.id})">
+                        View Response
+                    </button>
+                ` : ''}
             </div>
         `).join('');
     } catch (error) {
@@ -596,6 +608,86 @@ async function loadComplaints() {
         }
     }
 }
+
+// Unified View Response
+function viewResponse(type, id) {
+    let data = null;
+    let modalTitle = 'Expert Response';
+
+    if (type === 'agriculture') {
+        data = window.myQueries ? window.myQueries.find(q => q.id === id) : null;
+    } else if (type === 'city') {
+        data = window.cityComplaints ? window.cityComplaints.find(c => c.id === id) : null;
+        modalTitle = 'City Services Response';
+    }
+
+    if (!data) return;
+
+    const modal = document.getElementById('response-modal');
+    const content = document.getElementById('response-content');
+    const title = modal.querySelector('h3');
+
+    if (!modal || !content) return;
+    if (title) title.textContent = modalTitle;
+
+    let responseHtml = '';
+
+    if (type === 'agriculture') {
+        const advisory = (data.advisories && data.advisories.length > 0) ? data.advisories[0] : null;
+        responseHtml = `
+            <div class="card" style="box-shadow: none; border: 1px solid var(--border-color);">
+                <p><strong>Query:</strong> ${data.title}</p>
+                <p><strong>Ref ID:</strong> ${data.query_id}</p>
+                <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--border-color);">
+                ${advisory ? `
+                    <h4 style="color: var(--success-color);">Expert Advice</h4>
+                    <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+                        ${advisory.advice}
+                    </div>
+                    <div class="request-meta">
+                        <span class="badge badge-info">👤 Officer: ${advisory.officer_name || 'Agri Officer'}</span>
+                        <span class="badge badge-info">📅 ${new Date(advisory.created_at).toLocaleDateString()}</span>
+                    </div>
+                ` : '<p class="text-error">Response is being finalized.</p>'}
+            </div>
+        `;
+    } else if (type === 'city') {
+        const responses = data.responses || [];
+        responseHtml = `
+            <div class="card" style="box-shadow: none; border: 1px solid var(--border-color);">
+                <p><strong>Complaint:</strong> ${data.title}</p>
+                <p><strong>Ref ID:</strong> ${data.complaint_id}</p>
+                <p><strong>Status:</strong> <span class="badge badge-${data.status === 'resolved' ? 'success' : 'warning'}">${data.status}</span></p>
+                <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--border-color);">
+                
+                ${responses.length > 0 ? `
+                    <h4 style="color: var(--primary-color);">Official Staff Updates</h4>
+                    ${responses.map(r => `
+                        <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: 0.5rem; margin: 0.5rem 0; border-left: 4px solid var(--primary-color);">
+                            <p style="margin-bottom: 0.5rem;">${r.message}</p>
+                            <div class="request-meta">
+                                <span class="badge badge-info">👤 Staff: ${r.staff_name || 'City Official'}</span>
+                                <span class="badge badge-info">📅 ${new Date(r.created_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                ` : `
+                    <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: 0.5rem; margin: 1rem 0; text-align: center;">
+                        <p style="margin: 0; color: var(--text-secondary);">Our staff is currently reviewing your complaint.</p>
+                    </div>
+                `}
+            </div>
+        `;
+    }
+
+    content.innerHTML = responseHtml;
+    modal.classList.add('active');
+}
+
+// Redirecting old call to new one
+window.viewQueryResponse = (id) => viewResponse('agriculture', id);
+window.viewResponse = viewResponse;
+
 
 // ============ MY REQUESTS SECTION ============
 
@@ -667,9 +759,16 @@ async function loadAllRequests() {
             } else {
                 complaintsContainer.innerHTML = complaints.map(complaint => `
                     <div class="request-card">
-                        <h4>${complaint.title}</h4>
-                        <p>${complaint.description.substring(0, 100)}...</p>
-                        <span class="badge badge-${complaint.status === 'resolved' ? 'success' : 'warning'}">${complaint.status}</span>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <h4>${complaint.title}</h4>
+                            <span class="badge badge-${complaint.status === 'resolved' ? 'success' : 'warning'}">${complaint.status}</span>
+                        </div>
+                        <p>${complaint.description.substring(0, 100)}${complaint.description.length > 100 ? '...' : ''}</p>
+                        ${(complaint.status === 'in_progress' || complaint.status === 'resolved') ? `
+                            <button class="btn btn-sm btn-primary" style="margin-top: 0.5rem;" onclick="viewResponse('city', ${complaint.id})">
+                                View Response
+                            </button>
+                        ` : ''}
                     </div>
                 `).join('');
             }

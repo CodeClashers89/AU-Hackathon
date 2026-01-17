@@ -86,7 +86,9 @@ class LoginSerializer(serializers.Serializer):
 
 class ApprovalRequestSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
+    reviewed_by_name = serializers.CharField(source='reviewed_by.get_full_name', read_only=True)
     
     class Meta:
         model = ApprovalRequest
         fields = '__all__'
+        read_only_fields = ['reviewed_by', 'reviewed_at', 'status']

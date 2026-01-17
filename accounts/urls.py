@@ -4,6 +4,7 @@ from . import views
 
 router = DefaultRouter()
 router.register('approvals', views.ApprovalRequestViewSet, basename='approval')
+router.register('users', views.UserViewSet, basename='user')
 
 urlpatterns = [
     path('register/', views.register, name='register'),

@@ -8,5 +8,6 @@ router.register('complaints', views.ComplaintViewSet, basename='complaint')
 router.register('responses', views.ComplaintResponseViewSet, basename='complaint-response')
 
 urlpatterns = [
+    path('stats/', views.dashboard_stats, name='dashboard-stats'),
     path('', include(router.urls)),
 ]

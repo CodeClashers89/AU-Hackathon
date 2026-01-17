@@ -90,3 +90,14 @@ class ApprovalRequestViewSet(viewsets.ModelViewSet):
         approval_request.save()
         
         return Response({'message': 'Approval request rejected'})
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    """Admin-only user list"""
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.role != 'admin':
+            return CustomUser.objects.none()
+        return CustomUser.objects.all().order_by('-created_at')

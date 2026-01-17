@@ -5,8 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Citizen Portal - DPI Platform</title>
     {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
+        :root {
+            --primary-color: #0B4F87;
+            --primary-dark: #07355a;
+            --secondary-color: #1e8449;
+            --accent-color: #1e8449;
+            --bg-secondary: #f8fafc;
+            --text-primary: #0f172a;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+
         .user-profile {
             padding: 1rem 1.5rem;
             margin-bottom: 1rem;
@@ -78,7 +94,7 @@
     <div class="dashboard">
         <aside class="sidebar">
             <div style="padding: 0 1.5rem; margin-bottom: 2rem;">
-                <h3 style="color: var(--primary-color);">🏛️ DPI Platform</h3>
+                <h3 style="color: var(--primary-color);">🏛️ DPI.PLATFORM</h3>
                 <p style="font-size: 0.875rem; color: var(--text-muted);">Citizen Portal</p>
             </div>
 

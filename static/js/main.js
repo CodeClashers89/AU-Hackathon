@@ -154,10 +154,23 @@ async function loadDoctors() {
 
         if (select) {
             select.innerHTML = '<option value="">Select a doctor</option>';
-            doctors.forEach(doctor => {
+            const doctorsArray = doctors.results || doctors || [];
+
+            doctorsArray.forEach(doctor => {
                 const option = document.createElement('option');
                 option.value = doctor.id;
-                option.textContent = `Dr. ${doctor.user_details.full_name} - ${doctor.specialization}`;
+
+                // Securely get doctor name
+                let name = 'Unknown Doctor';
+                if (doctor.user_details && doctor.user_details.full_name) {
+                    name = doctor.user_details.full_name;
+                } else if (doctor.user) {
+                    name = `${doctor.user.first_name} ${doctor.user.last_name}`;
+                } else if (doctor.full_name) {
+                    name = doctor.full_name;
+                }
+
+                option.textContent = `Dr. ${name} - ${doctor.specialization || 'General'}`;
                 select.appendChild(option);
             });
         }

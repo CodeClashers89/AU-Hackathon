@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -16,171 +16,633 @@
             --gov-blue: #0B4F87;
             --pure-white: #ffffff;
             --light-bg: #f8fafc;
+            --accent-glow: rgba(11, 79, 135, 0.05);
+            --border-color: #e2e8f0;
+            --radius-lg: 4px;
+            --radius-md: 2px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .dashboard-container {
-            display: flex;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: #0f172a;
+            overflow-x: hidden;
             min-height: 100vh;
+            display: flex;
         }
 
+        /* --- Sidebar --- */
         .sidebar {
-            width: 280px;
+            width: 300px;
             background: white;
             border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
             position: fixed;
             height: 100vh;
-            overflow-y: auto;
-            z-index: 100;
+            z-index: 1000;
+            transition: var(--transition);
         }
 
+        .sidebar-header {
+            padding: 2.5rem 2rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+            letter-spacing: 2px;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .portal-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--civic-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 1.5rem 0;
+            list-style: none;
+        }
+
+        .sidebar-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-link {
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            text-decoration: none;
+            color: var(--gov-blue);
+            font-weight: 600;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+            opacity: 0.6;
+            cursor: pointer;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            opacity: 1;
+            background: var(--accent-glow);
+            border-left-color: var(--gov-blue);
+        }
+
+        /* --- Main Content --- */
         .main-content {
             flex: 1;
-            margin-left: 280px;
-            padding: 2rem;
-            background: var(--light-bg);
+            margin-left: 300px;
+            padding: 3rem 4%;
+            transition: var(--transition);
         }
 
         .dashboard-section {
             display: none;
+            animation: fadeIn 0.4s ease-out;
         }
 
         .dashboard-section.active {
             display: block;
         }
 
-        .sidebar-menu {
-            list-style: none;
-            padding: 1rem 0;
+        .section-header {
+            margin-bottom: 3rem;
         }
 
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 0.75rem 1.5rem;
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: all 0.2s;
-            cursor: pointer;
-            border-left: 4px solid transparent;
-        }
-
-        .sidebar-link:hover {
-            background: #f1f5f9;
+        .section-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
             color: var(--gov-blue);
+            margin-bottom: 0.5rem;
         }
 
-        .sidebar-link.active {
-            background: #eef2ff;
-            color: var(--gov-blue);
-            border-left-color: var(--gov-blue);
-            font-weight: 600;
+        .section-header p {
+            opacity: 0.7;
+            font-size: 1.1rem;
         }
 
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Stats --- */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
         }
 
-        /* Modal Styles */
-        .user-profile-detail .detail-group {
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-bottom: 6px solid var(--gov-blue);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card.success {
+            border-color: var(--civic-green);
+        }
+
+        .stat-card.warning {
+            border-color: #f59e0b;
+        }
+
+        .stat-card.purple {
+            border-color: #8b5cf6;
+        }
+
+        .stat-card.danger {
+            border-color: #ef4444;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.5;
+            letter-spacing: 1px;
+        }
+
+        /* --- Cards & Components --- */
+        .ultra-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.02);
+            margin-bottom: 2rem;
+            border: 1px solid #f1f5f9;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            color: var(--gov-blue);
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        /* --- Forms --- */
+        .form-group {
             margin-bottom: 1rem;
         }
 
-        .user-profile-detail label {
-            font-weight: 600;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
+        .form-control {
+            padding: 0.8rem 1.2rem;
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            font-size: 0.95rem;
+            outline: none;
+            width: 100%;
+            transition: var(--transition);
+            border-radius: var(--radius-md);
         }
 
-        .user-profile-detail p {
-            font-size: 1rem;
+        .form-control:focus {
+            border-color: var(--gov-blue);
+            background: white;
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        /* --- Tables --- */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1.2rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--gov-blue);
+            border-bottom: 2px solid #f1f5f9;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+            color: #475569;
+        }
+
+        tr:hover td {
+            background: #fafafa;
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            padding: 0.8rem 1.8rem;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            border: none;
+            transition: var(--transition);
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--gov-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--civic-green);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--civic-green);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.7rem;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--gov-blue);
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+        }
+
+        /* --- Badges --- */
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-info {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* --- Layout Utils --- */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .gap-2 {
+            gap: 1rem;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .mb-2 {
+            margin-bottom: 2rem;
+        }
+
+        .mb-1 {
+            margin-bottom: 1rem;
+        }
+
+        /* --- Modals --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 79, 135, 0.4);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 3rem;
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.1);
+            animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(0.9) translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 1rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.5rem;
+            color: var(--gov-blue);
+            font-weight: 800;
+        }
+
+        .modal-close {
+            font-size: 2.5rem;
+            cursor: pointer;
+            opacity: 0.3;
+            line-height: 1;
+            background: none;
+            border: none;
+            color: inherit;
+        }
+
+        .modal-close:hover {
+            opacity: 1;
+            color: #ef4444;
+        }
+
+        /* --- Spinner --- */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--gov-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 3rem auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* --- Notifications --- */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1.2rem 2.5rem;
+            background: white;
+            border-left: 6px solid var(--civic-green);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+            z-index: 10000;
+            display: none;
+            font-weight: 700;
+            animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 80px;
+            }
+
+            .sidebar-header,
+            .sidebar-link span,
+            .portal-label {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 80px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header" style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
-                <h2 style="color: var(--gov-blue); margin: 0;">GovAdmin</h2>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0.2rem 0 0;">DPI Console v2.0</p>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="logo">DPI.PLATFORM</a>
+            <span class="portal-label">GovAdmin Console</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item"><a onclick="showSection('dashboard')" class="sidebar-link active">📊 <span>System
+                        Overview</span></a></li>
+            <li class="sidebar-item"><a onclick="showSection('approvals')" class="sidebar-link">✅
+                    <span>Approvals</span></a></li>
+            <li class="sidebar-item"><a onclick="showSection('services')" class="sidebar-link">🔧 <span>Services
+                        Hub</span></a></li>
+            <li class="sidebar-item"><a onclick="showSection('users')" class="sidebar-link">👥 <span>Identity
+                        Vault</span></a></li>
+            <li class="sidebar-item"><a onclick="showSection('analytics')" class="sidebar-link">📈 <span>Analytics
+                        Stream</span></a></li>
+            <li class="sidebar-item" style="margin-top: auto; border-top: 1px solid #f1f5f9;">
+                <a href="/admin/" target="_blank" class="sidebar-link">⚙️ <span>Core Admin</span></a>
+                <a onclick="logout()" class="sidebar-link">🚪 <span>Logout</span></a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Dashboard Section -->
+        <div id="section-dashboard" class="dashboard-section active">
+            <div class="section-header">
+                <h1>System Overview</h1>
+                <p>Real-time platform telemetry and operational health.</p>
             </div>
-            <ul class="sidebar-menu">
-                <li><a onclick="showSection('dashboard')" class="sidebar-link active">📊 System Overview</a></li>
-                <li><a onclick="showSection('approvals')" class="sidebar-link">✅ Identity Approvals</a></li>
-                <li><a onclick="showSection('services')" class="sidebar-link">🔧 Service Fabric</a></li>
-                <li><a onclick="showSection('users')" class="sidebar-link">👥 Identity Vault</a></li>
-                <li><a onclick="showSection('analytics')" class="sidebar-link">📈 Data Streams</a></li>
-                <li style="margin-top: 2rem; border-top: 1px solid var(--border-color);">
-                    <a href="/admin/" class="sidebar-link" target="_blank">⚙️ Core Server Admin</a>
-                    <a onclick="logout()" class="sidebar-link">🚪 Logout</a>
-                </li>
-            </ul>
-        </aside>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Stats Header (Visible in dashboard section) -->
-            <div id="section-dashboard" class="dashboard-section active">
-                <div class="section-header mb-2">
-                    <h1>System Overview</h1>
-                    <p>Real-time platform telemetry and operational health.</p>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="admin-total-users">0</div>
+                    <div class="stat-label">Identities Validated</div>
                 </div>
-
-                <div class="stats-grid">
-                    <div class="card p-2 text-center">
-                        <h2 id="admin-total-users">0</h2>
-                        <p class="text-secondary uppercase small bold">Identities Validated</p>
-                    </div>
-                    <div class="card p-2 text-center" style="border-bottom: 4px solid var(--civic-green);">
-                        <h2>3</h2>
-                        <p class="text-secondary uppercase small bold">Active Hubs</p>
-                    </div>
-                    <div class="card p-2 text-center" style="border-bottom: 4px solid #f59e0b;">
-                        <h2 id="admin-pending-approvals">0</h2>
-                        <p class="text-secondary uppercase small bold">Queue Approvals</p>
-                    </div>
-                    <div class="card p-2 text-center" style="border-bottom: 4px solid #ef4444;">
-                        <h2 class="stat-value">0</h2>
-                        <p class="text-secondary uppercase small bold">API Transactions</p>
-                    </div>
+                <div class="stat-card success">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Active Hubs</div>
                 </div>
-
-                <div class="grid grid-2 gap-2">
-                    <div class="card">
-                        <h3>📡 Hub Telemetry</h3>
-                        <div class="health-item mb-1 flex justify-between p-1 bg-light rounded">
-                            <span>🏥 Healthcare Network</span>
-                            <span class="badge badge-success">Nominal</span>
-                        </div>
-                        <div class="health-item mb-1 flex justify-between p-1 bg-light rounded">
-                            <span>🌾 Agricultural Feed</span>
-                            <span class="badge badge-success">Nominal</span>
-                        </div>
-                        <div class="health-item mb-1 flex justify-between p-1 bg-light rounded">
-                            <span>🏙️ Urban Systems</span>
-                            <span class="badge badge-success">Nominal</span>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <h3>⚡ Rapid Directives</h3>
-                        <button class="btn btn-primary w-full mb-1" onclick="showSection('services')">Audit Service Registry</button>
-                        <button class="btn btn-secondary w-full" onclick="showSection('approvals')">Process Verification Queue</button>
-                    </div>
+                <div class="stat-card warning">
+                    <div class="stat-value" id="admin-pending-approvals">0</div>
+                    <div class="stat-label">Queue Approvals</div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">API Transactions</div>
                 </div>
             </div>
 
-            <!-- Approvals Section -->
-            <div id="section-approvals" class="dashboard-section">
-                <div class="section-header mb-2">
-                    <h1>Verification Queue</h1>
-                    <p>Approve or audit pending service provider identities.</p>
+            <div class="grid-2">
+                <div class="ultra-card">
+                    <h3 class="card-title">📡 Hub Telemetry</h3>
+                    <div
+                        style="margin-bottom: 1rem; display: flex; justify-content: space-between; padding: 1rem; background: #f8fafc; border-radius: var(--radius-md);">
+                        <span style="font-weight: 600;">🏥 Healthcare Network</span>
+                        <span class="badge badge-success">Nominal</span>
+                    </div>
+                    <div
+                        style="margin-bottom: 1rem; display: flex; justify-content: space-between; padding: 1rem; background: #f8fafc; border-radius: var(--radius-md);">
+                        <span style="font-weight: 600;">🌾 Agricultural Feed</span>
+                        <span class="badge badge-success">Nominal</span>
+                    </div>
+                    <div
+                        style="margin-bottom: 1rem; display: flex; justify-content: space-between; padding: 1rem; background: #f8fafc; border-radius: var(--radius-md);">
+                        <span style="font-weight: 600;">🏙️ Urban Systems</span>
+                        <span class="badge badge-success">Nominal</span>
+                    </div>
                 </div>
-                <div class="card p-0">
+                <div class="ultra-card">
+                    <h3 class="card-title">⚡ Rapid Directives</h3>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <button class="btn btn-primary w-full" onclick="showSection('services')">Audit Service
+                            Registry</button>
+                        <button class="btn btn-secondary w-full" onclick="showSection('approvals')">Process Verification
+                            Queue</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approvals Section -->
+        <div id="section-approvals" class="dashboard-section">
+            <div class="section-header">
+                <h1>Verification Queue</h1>
+                <p>Approve or audit pending service provider identities.</p>
+            </div>
+            <div class="ultra-card">
+                <div class="table-container">
                     <table>
                         <thead>
                             <tr>
@@ -197,17 +659,19 @@
                     </table>
                 </div>
             </div>
+        </div>
 
-            <!-- Services Section -->
-            <div id="section-services" class="dashboard-section">
-                <div class="section-header mb-2 flex justify-between items-center">
-                    <div>
-                        <h1>Service Fabric</h1>
-                        <p>Manage API endpoints and nodal connectivity.</p>
-                    </div>
-                    <button class="btn btn-primary btn-sm" onclick="openServiceModal()">+ Inject New Hub</button>
+        <!-- Services Section -->
+        <div id="section-services" class="dashboard-section">
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                    <h1>Service Fabric</h1>
+                    <p>Manage API endpoints and nodal connectivity.</p>
                 </div>
-                <div class="card p-0">
+                <button class="btn btn-primary" onclick="openServiceModal()">+ Inject New Hub</button>
+            </div>
+            <div class="ultra-card">
+                <div class="table-container">
                     <table>
                         <thead>
                             <tr>
@@ -224,14 +688,19 @@
                     </table>
                 </div>
             </div>
+        </div>
 
-            <!-- Users Section -->
-            <div id="section-users" class="dashboard-section">
-                <div class="section-header mb-2">
+        <!-- Users Section -->
+        <div id="section-users" class="dashboard-section">
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
                     <h1>Identity Vault</h1>
                     <p>Global registry of all verified платформа participants.</p>
                 </div>
-                <div class="card p-0">
+                <button class="btn btn-primary" onclick="openCreateUserModal()">+ Create Identity</button>
+            </div>
+            <div class="ultra-card">
+                <div class="table-container">
                     <table>
                         <thead>
                             <tr>
@@ -248,19 +717,19 @@
                     </table>
                 </div>
             </div>
+        </div>
 
-            <!-- Analytics Section -->
-            <div id="section-analytics" class="dashboard-section">
-                <div class="section-header mb-2">
-                    <h1>Data Streams</h1>
-                    <p>System-wide engagement and infrastructure health telemetry.</p>
-                </div>
-                <div id="analytics-content">
-                    <!-- JS driven -->
-                </div>
+        <!-- Analytics Section -->
+        <div id="section-analytics" class="dashboard-section">
+            <div class="section-header">
+                <h1>Data Streams</h1>
+                <p>System-wide engagement and infrastructure health telemetry.</p>
             </div>
-        </main>
-    </div>
+            <div id="analytics-content">
+                <!-- JS driven -->
+            </div>
+        </div>
+    </main>
 
     <!-- Modals -->
     <!-- Service Form Modal -->
@@ -272,25 +741,116 @@
             </div>
             <form id="service-form" onsubmit="saveService(event)">
                 <input type="hidden" id="service-id">
-                <div class="form-group mb-1">
-                    <label>Service Name</label>
-                    <input type="text" id="service-name" class="form-control" required>
+                <div class="form-group">
+                    <label
+                        style="font-size: 0.75rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">Service
+                        Name</label>
+                    <input type="text" id="service-name" class="form-control" required style="margin-top: 0.5rem;">
                 </div>
-                <div class="form-group mb-1">
-                    <label>Endpoint URL</label>
-                    <input type="text" id="service-url" class="form-control" required>
+                <div class="form-group">
+                    <label
+                        style="font-size: 0.75rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">Endpoint
+                        URL</label>
+                    <input type="text" id="service-url" class="form-control" required style="margin-top: 0.5rem;">
                 </div>
-                <div class="form-group mb-1">
-                    <label>Icon (Emoji/Class)</label>
-                    <input type="text" id="service-icon" class="form-control" placeholder="🏥">
+                <div class="form-group">
+                    <label style="font-size: 0.75rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">Icon
+                        (Emoji)</label>
+                    <input type="text" id="service-icon" class="form-control" placeholder="🏥"
+                        style="margin-top: 0.5rem;">
                 </div>
-                <div class="form-group mb-2">
-                    <label>Description</label>
-                    <textarea id="service-description" class="form-control"></textarea>
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label
+                        style="font-size: 0.75rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">Description</label>
+                    <textarea id="service-description" class="form-control" rows="3"
+                        style="margin-top: 0.5rem;"></textarea>
                 </div>
                 <div class="flex gap-2">
                     <button type="submit" class="btn btn-primary">Save Directive</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('service-form-modal')">Cancel</button>
+                    <button type="button" class="btn btn-secondary"
+                        onclick="closeModal('service-form-modal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create User Modal -->
+    <div id="create-user-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Identity</h3>
+                <button class="modal-close" onclick="closeModal('create-user-modal')">&times;</button>
+            </div>
+            <form id="create-user-form" onsubmit="saveUser(event)">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label
+                            style="font-size: 0.75rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">First
+                            Name</label>
+                        <input type="text" id="new-user-firstname" class="form-control" required
+                            style="margin-top: 0.5rem;">
+                    </div>
+                    <div class="form-group">
+                        <label
+                            style="font-size: 0.75rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">Last
+                            Name</label>
+                        <input type="text" id="new-user-lastname" class="form-control" required
+                            style="margin-top: 0.5rem;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label
+                        style="font-size: 0.75rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">Username</label>
+                    <input type="text" id="new-user-username" class="form-control" required style="margin-top: 0.5rem;">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 0.75rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">Email
+                        Address</label>
+                    <input type="email" id="new-user-email" class="form-control" required style="margin-top: 0.5rem;">
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label
+                            style="font-size: 0.75rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">Role</label>
+                        <select id="new-user-role" class="form-control" required style="margin-top: 0.5rem;">
+                            <option value="citizen">Citizen</option>
+                            <option value="doctor">Healthcare Provider</option>
+                            <option value="agri_officer">Agri Officer</option>
+                            <option value="city_staff">City Staff</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label
+                            style="font-size: 0.75rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">Phone
+                            Number</label>
+                        <input type="tel" id="new-user-phone" class="form-control" style="margin-top: 0.5rem;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label
+                        style="font-size: 0.75rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">Address</label>
+                    <input type="text" id="new-user-address" class="form-control" style="margin-top: 0.5rem;">
+                </div>
+                <div class="grid-2" style="margin-bottom: 2rem;">
+                    <div class="form-group">
+                        <label
+                            style="font-size: 0.75rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">Password</label>
+                        <input type="password" id="new-user-password" class="form-control" required
+                            style="margin-top: 0.5rem;">
+                    </div>
+                    <div class="form-group">
+                        <label
+                            style="font-size: 0.75rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">Confirm
+                            Password</label>
+                        <input type="password" id="new-user-confirm-password" class="form-control" required
+                            style="margin-top: 0.5rem;">
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-primary">Establish Identity</button>
+                    <button type="button" class="btn btn-secondary"
+                        onclick="closeModal('create-user-modal')">Cancel</button>
                 </div>
             </form>
         </div>

@@ -1,152 +1,643 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agricultural Officer Dashboard - DPI Platform</title>
+    <title>Agricultural Officer Dashboard | DPI Platform</title>
     {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
-        .section-content { display: none; }
-        .section-content.active { display: block; }
+        :root {
+            --civic-green: #1e8449;
+            --gov-blue: #0B4F87;
+            --pure-white: #ffffff;
+            --light-bg: #f8fafc;
+            --accent-glow: rgba(11, 79, 135, 0.05);
+            --border-color: #e2e8f0;
+            --radius-lg: 4px;
+            --radius-md: 2px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: #0f172a;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .sidebar-header {
+            padding: 2.5rem 2rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+            letter-spacing: 2px;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .portal-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--civic-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 1.5rem 0;
+            list-style: none;
+        }
+
+        .sidebar-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-link {
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            text-decoration: none;
+            color: var(--gov-blue);
+            font-weight: 600;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+            opacity: 0.6;
+            cursor: pointer;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            opacity: 1;
+            background: var(--accent-glow);
+            border-left-color: var(--gov-blue);
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            margin-left: 300px;
+            padding: 3rem 4%;
+            transition: var(--transition);
+        }
+
+        .section-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        .section-header {
+            margin-bottom: 3rem;
+        }
+
+        .section-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            opacity: 0.7;
+            font-size: 1.1rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Stats --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-bottom: 6px solid var(--gov-blue);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card.success {
+            border-color: var(--civic-green);
+        }
+
+        .stat-card.warning {
+            border-color: #f59e0b;
+        }
+
+        .stat-card.purple {
+            border-color: #8b5cf6;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--gov-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.5;
+            letter-spacing: 1px;
+        }
+
+        /* --- Cards & Components --- */
+        .ultra-card,
+        .card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.02);
+            margin-bottom: 2rem;
+            border: 1px solid #f1f5f9;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            color: var(--gov-blue);
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- Forms --- */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            opacity: 0.6;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea,
+        .form-control {
+            padding: 0.8rem 1.2rem;
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            font-size: 0.95rem;
+            outline: none;
+            width: 100%;
+            transition: var(--transition);
+            border-radius: var(--radius-md);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: var(--gov-blue);
+            background: white;
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        /* --- Tables --- */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1.2rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--gov-blue);
+            border-bottom: 2px solid #f1f5f9;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+            color: #475569;
+        }
+
+        tr:hover td {
+            background: #fafafa;
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            padding: 0.8rem 1.8rem;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            border: none;
+            transition: var(--transition);
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--gov-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--civic-green);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.7rem;
+        }
+
+        /* --- Badges --- */
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-info {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .badge-secondary {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        /* --- Modals --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 79, 135, 0.4);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 3rem;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.1);
+            animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: var(--radius-lg);
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(0.9) translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* --- Spinner --- */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--gov-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* --- Notifications (from common styles) --- */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1.2rem 2.5rem;
+            background: white;
+            border-left: 6px solid var(--civic-green);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+            z-index: 10000;
+            display: none;
+            font-weight: 700;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 80px;
+            }
+
+            .sidebar-header,
+            .sidebar-link span,
+            .portal-label {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 80px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
+
 <body>
-    <div class="dashboard">
-        <aside class="sidebar">
-            <div style="padding: 0 1.5rem; margin-bottom: 2rem;">
-                <h3 style="color: var(--primary-color);">🌾 Agriculture</h3>
-                <p style="font-size: 0.875rem; color: var(--text-muted);">Officer Portal</p>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="logo">DPI.PLATFORM</a>
+            <span class="portal-label">Agri-Officer Portal</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item"><a href="#dashboard" onclick="showSection('dashboard'); return false;"
+                    class="sidebar-link active">📊 <span>Dashboard</span></a></li>
+            <li class="sidebar-item"><a href="#queries" onclick="showSection('queries'); return false;"
+                    class="sidebar-link">❓ <span>Farmer Queries</span></a></li>
+            <li class="sidebar-item"><a href="#advisories" onclick="showSection('advisories'); return false;"
+                    class="sidebar-link">📝 <span>Advisories</span></a></li>
+            <li class="sidebar-item"><a href="#updates" onclick="showSection('updates'); return false;"
+                    class="sidebar-link">📢 <span>Post Updates</span></a></li>
+            <li class="sidebar-item" style="margin-top: auto; border-top: 1px solid #f1f5f9;">
+                <a href="#" onclick="logout(); return false;" class="sidebar-link">🚪 <span>Logout</span></a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="section-content active">
+            <div class="section-header">
+                <h1>Officer Dashboard</h1>
+                <p>Provide expert advice and manage agricultural updates.</p>
             </div>
-            <ul class="sidebar-menu">
-                <li class="sidebar-item"><a href="#dashboard" class="sidebar-link active" onclick="showSection('dashboard'); return false;">📊 Dashboard</a></li>
-                <li class="sidebar-item"><a href="#queries" class="sidebar-link" onclick="showSection('queries'); return false;">❓ Farmer Queries</a></li>
-                <li class="sidebar-item"><a href="#advisories" class="sidebar-link" onclick="showSection('advisories'); return false;">📝 Advisories</a></li>
-                <li class="sidebar-item"><a href="#updates" class="sidebar-link" onclick="showSection('updates'); return false;">📢 Post Updates</a></li>
-                <li class="sidebar-item"><a href="#" onclick="logout(); return false;" class="sidebar-link">🚪 Logout</a></li>
-            </ul>
-        </aside>
 
-        <main class="main-content">
-            <h1>Agricultural Officer Dashboard</h1>
-            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Provide expert advice to farmers</p>
-
-            <!-- Dashboard Section -->
-            <div id="dashboard-section" class="section-content active">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="stat-pending">0</div>
-                        <div class="stat-label">Pending Queries</div>
-                    </div>
-                    <div class="stat-card success">
-                        <div class="stat-value" id="stat-advisories">0</div>
-                        <div class="stat-label">Advisories Given</div>
-                    </div>
-                    <div class="stat-card warning">
-                        <div class="stat-value" id="stat-updates">0</div>
-                        <div class="stat-label">Updates Posted</div>
-                    </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-pending">0</div>
+                    <div class="stat-label">Pending Queries</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-value" id="stat-advisories">0</div>
+                    <div class="stat-label">Advisories Given</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-value" id="stat-updates">0</div>
+                    <div class="stat-label">Updates Posted</div>
                 </div>
             </div>
 
-            <!-- Updates Section -->
-            <div id="updates-section" class="section-content">
-                <div class="card mb-3" id="updates">
-                    <h3>Post Agricultural Update</h3>
-                    <form id="post-update-form">
-                        <div class="form-group">
-                            <label class="form-label">Update Type</label>
-                            <select class="form-select" name="update_type" required>
-                                <option value="weather">Weather Alert</option>
-                                <option value="market">Market Price</option>
-                                <option value="scheme">Government Scheme</option>
-                                <option value="pest">Pest Alert</option>
-                                <option value="advisory">General Advisory</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Title</label>
-                            <input type="text" class="form-input" name="title" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Content</label>
-                            <textarea class="form-textarea" name="content" required></textarea>
-                        </div>
-                         <div class="form-group">
-                            <label class="form-label">Target District (Optional)</label>
-                            <input type="text" class="form-input" name="district">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Post Update</button>
-                    </form>
+            <div class="ultra-card">
+                <h3>Recent Activity</h3>
+                <p style="color: #64748b;">System is active and monitoring real-time agricultural data streams.</p>
+            </div>
+        </div>
+
+        <!-- Queries Section -->
+        <div id="queries-section" class="section-content">
+            <div class="section-header">
+                <h1>Farmer Queries</h1>
+                <p>Respond to incoming questions from registered farmers.</p>
+            </div>
+            <div class="ultra-card">
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Farmer</th>
+                                <th>Query</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="queries-table-body">
+                            <tr>
+                                <td colspan="5" class="text-center">
+                                    <div class="spinner"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                
-                <div class="card">
-                     <h3>My Posted Updates</h3>
-                     <div id="my-updates-list">
-                         <div class="spinner"></div>
-                     </div>
+            </div>
+        </div>
+
+        <!-- Advisories Section -->
+        <div id="advisories-section" class="section-content">
+            <div class="section-header">
+                <h1>My Advisories</h1>
+                <p>History of expert advice provided to farmers.</p>
+            </div>
+            <div class="ultra-card">
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Query Ref</th>
+                                <th>Advice</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="advisories-table-body">
+                            <tr>
+                                <td colspan="4" class="text-center">
+                                    <div class="spinner"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- Updates Section -->
+        <div id="updates-section" class="section-content">
+            <div class="section-header">
+                <h1>Broadcast Updates</h1>
+                <p>Post alerts, schemes, and market information for farmers.</p>
             </div>
 
-            <!-- Queries Section -->
-            <div id="queries-section" class="section-content">
-                <div class="card">
-                    <h3>All Farmer Queries</h3>
-                    <div class="table-container">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Farmer</th>
-                                    <th>Query</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="queries-table-body">
-                                <tr>
-                                    <td colspan="5" class="text-center">Loading queries...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+            <div class="ultra-card" id="updates">
+                <h3>Post New Update</h3>
+                <form id="post-update-form">
+                    <div class="form-group">
+                        <label class="form-label">Update Type</label>
+                        <select class="form-select" name="update_type" required>
+                            <option value="weather">Weather Alert</option>
+                            <option value="market">Market Price</option>
+                            <option value="scheme">Government Scheme</option>
+                            <option value="pest">Pest Alert</option>
+                            <option value="advisory">General Advisory</option>
+                        </select>
                     </div>
-                </div>
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-input" name="title" required
+                            placeholder="Header for the update...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Content</label>
+                        <textarea class="form-textarea" name="content" required
+                            placeholder="Detailed information..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Target District (Optional)</label>
+                        <input type="text" class="form-input" name="district"
+                            placeholder="Leave empty for all districts">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Post Update</button>
+                </form>
             </div>
 
-            <!-- Advisories Section -->
-            <div id="advisories-section" class="section-content">
-                 <div class="card">
-                     <h3>My Given Advisories</h3>
-                     <div class="table-container">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Query Ref</th>
-                                    <th>Advice</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="advisories-table-body">
-                                <tr>
-                                    <td colspan="4" class="text-center">Loading advisories...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                 </div>
+            <div class="ultra-card">
+                <h3>My Posted Updates</h3>
+                <div id="my-updates-list" style="display: grid; gap: 1rem;">
+                    <div class="spinner"></div>
+                </div>
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
+
+    <!-- Respond Modal -->
     <div class="modal" id="respond-modal">
         <div class="modal-content">
-            <h3 id="respond-modal-title">Respond to Query</h3>
+            <h3 id="respond-modal-title"
+                style="margin-bottom: 2rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem;">Respond to Query
+            </h3>
             <form id="respond-form" onsubmit="handleRespond(event)">
                 <div class="form-group">
                     <label class="form-label">Expert Advice</label>
-                    <textarea class="form-textarea" rows="5" id="advisory-text" required></textarea>
+                    <textarea class="form-textarea" rows="5" id="advisory-text" required
+                        placeholder="Type your professional advice here..."></textarea>
                 </div>
-                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
                     <button type="button" class="btn btn-secondary" onclick="closeRespondModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary">Send Response</button>
                 </div>
@@ -157,9 +648,9 @@
     <!-- View Query Modal -->
     <div class="modal" id="view-modal">
         <div class="modal-content">
-            <h3>Query Details</h3>
-            <div id="view-query-content">Loading...</div>
-            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+            <h3 style="margin-bottom: 2rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem;">Query Details</h3>
+            <div id="view-query-content" style="line-height: 1.6;">Loading...</div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
                 <button type="button" class="btn btn-secondary" onclick="closeViewModal()">Close</button>
                 <button type="button" class="btn btn-primary" id="view-respond-btn">Respond</button>
             </div>
@@ -167,6 +658,7 @@
     </div>
 
     <script src="{% static 'js/main.js' %}"></script>
-    <script src="{% static 'js/agri_officer.js' %}?v=4"></script>
+    <script src="{% static 'js/agri_officer.js' %}?v=5"></script>
 </body>
+
 </html>

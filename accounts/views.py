@@ -157,7 +157,7 @@ def face_login(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def verify_otp(self, request):
+def verify_otp(request):
     """Verify OTP for registration or password reset"""
     username = request.data.get('username')
     otp_code = request.data.get('otp')
@@ -182,7 +182,10 @@ def verify_otp(self, request):
         if otp:
             otp.is_verified = True
             otp.save()
-            return Response({'message': 'OTP verified successfully'})
+            return Response({
+                'message': 'OTP verified successfully',
+                'requires_approval': user.role in ['doctor', 'city_staff', 'agri_officer']
+            })
         else:
             return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
             

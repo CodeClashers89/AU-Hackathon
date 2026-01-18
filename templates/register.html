@@ -232,6 +232,19 @@
             <div id="error-message" class="message error-message"></div>
             <div id="success-message" class="message success-message"></div>
 
+            <!-- OTP Verification Section (Hidden Initially) -->
+            <div id="otp-section" style="display: none; margin-top: 2rem; background: #f8fafc; padding: 2rem; border: 1px solid #e2e8f0;">
+                <h3 style="color: var(--gov-blue); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">Verify Verification Code</h3>
+                <p style="font-size: 0.9rem; margin-bottom: 1.5rem; opacity: 0.7;">Enter the 6-digit code sent to your email to activate your account.</p>
+                
+                <div class="form-group">
+                    <label>6-Digit OTP</label>
+                    <input type="text" id="otp_code" placeholder="000000" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 5px;">
+                </div>
+                
+                <button type="button" id="verify-otp-btn" class="btn-ultra" style="background: var(--civic-green);">Verify & Activate Credentials</button>
+            </div>
+
             <form id="register-form">
                 {% csrf_token %}
                 <div class="grid grid-2">
@@ -412,28 +425,75 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    if (data.requires_approval) {
-                        successDiv.textContent = 'Deployment successful! Your account is pending administrative approval. You will receive notification upon clearance.';
-                        successDiv.style.display = 'block';
-                        document.getElementById('register-form').reset();
-                        toggleDoctorFields(); // Reset logic
-                        setTimeout(() => {
-                            window.location.href = '/login/';
-                        }, 4000);
-                    } else {
-                        successDiv.textContent = 'Registration successful! Synchronizing with login terminal...';
-                        successDiv.style.display = 'block';
-                        setTimeout(() => {
-                            window.location.href = '/login/';
-                        }, 2000);
-                    }
+                    // Cache username for OTP verification
+                    window.pendingUsername = document.getElementById('username').value;
+                    
+                    successDiv.textContent = 'Registration initiated. A verification code has been sent to your email. Please verify below.';
+                    successDiv.style.display = 'block';
+                    
+                    // Hide registration form, show OTP section
+                    document.getElementById('register-form').style.display = 'none';
+                    document.getElementById('otp-section').style.display = 'block';
+                    window.scrollTo(0, 0);
                 } else {
                     const errors = Object.values(data).flat().join(', ');
                     errorDiv.textContent = `Transmission Error: ${errors || 'Registration failed. Please audit your information.'}`;
                     errorDiv.style.display = 'block';
                 }
             } catch (error) {
+                console.error('Registration Error:', error);
                 errorDiv.textContent = 'System Interrupt: A network or processing error occurred. Please retry.';
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        document.getElementById('verify-otp-btn').addEventListener('click', async () => {
+            const otpCode = document.getElementById('otp_code').value;
+            const errorDiv = document.getElementById('error-message');
+            const successDiv = document.getElementById('success-message');
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            if (otpCode.length !== 6) {
+                errorDiv.textContent = 'Validation error: Please enter the complete 6-digit code.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                const responseBody = await fetch('/api/accounts/verify-otp/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({
+                        username: window.pendingUsername,
+                        otp: otpCode,
+                        purpose: 'registration'
+                    })
+                });
+
+                const data = await responseBody.json();
+
+                if (responseBody.ok) {
+                    if (data.requires_approval) {
+                        successDiv.textContent = 'Credentials verified! Your account is now pending administrative approval. You will receive an email once it is activated.';
+                    } else {
+                        successDiv.textContent = 'Credentials verified and account activated! Redirecting to login terminal...';
+                    }
+                    successDiv.style.display = 'block';
+                    document.getElementById('otp-section').style.display = 'none';
+                    setTimeout(() => {
+                        window.location.href = '/login/';
+                    }, 4000);
+                } else {
+                    errorDiv.textContent = `Verification Error: ${data.error || 'Invalid or expired OTP.'}`;
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'System Interrupt: Verification failed. Please retry.';
                 errorDiv.style.display = 'block';
             }
         });

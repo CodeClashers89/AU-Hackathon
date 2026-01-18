@@ -40,8 +40,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       setState(() => _isLoading = false);
 
       if (result['success']) {
+        final message = result['requires_approval']
+            ? 'Email verified! Your account is now pending administrative approval.'
+            : 'Email verified! You can now login.';
+        
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Email verified! You can now login.')),
+          SnackBar(content: Text(message)),
         );
         Navigator.popUntil(context, (route) => route.isFirst);
       } else {

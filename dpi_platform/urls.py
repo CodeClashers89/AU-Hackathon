@@ -25,6 +25,7 @@ urlpatterns = [
     # Frontend views
     path('login/', TemplateView.as_view(template_name='login.html'), name='login'),
     path('register/', TemplateView.as_view(template_name='register.html'), name='register'),
+    path('forgot-password/', TemplateView.as_view(template_name='forgot_password.html'), name='forgot-password'),
     path('citizen/', TemplateView.as_view(template_name='citizen/portal.html'), name='citizen-portal'),
     path('doctor/', include([
         path('', healthcare.views.doctor_dashboard, name='doctor-dashboard'),

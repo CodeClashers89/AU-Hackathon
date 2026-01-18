@@ -233,7 +233,11 @@ class AuthService extends ChangeNotifier {
       );
 
       if (response.statusCode == 200) {
-        return {'success': true};
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'requires_approval': data['requires_approval'] ?? false
+        };
       } else {
         final error = json.decode(response.body);
         return {'success': false, 'error': error['error'] ?? 'Verification failed'};

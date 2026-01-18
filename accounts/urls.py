@@ -7,6 +7,7 @@ router.register('approvals', views.ApprovalRequestViewSet, basename='approval')
 router.register('users', views.UserViewSet, basename='user')
 
 urlpatterns = [
+    path('register/', views.register, name='register'),
     path('api-register/', views.register, name='api-register'),
     path('api-login/', views.login, name='api-login'),
     

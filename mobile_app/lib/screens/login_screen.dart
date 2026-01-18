@@ -348,24 +348,16 @@ class _LoginScreenState extends State<LoginScreen> {
           side: BorderSide(color: Colors.grey.shade200),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.network(
-              'https://www.svgrepo.com/show/475656/google-color.svg',
-              height: 24,
+        child: Center(
+          child: Text(
+            'LOGIN WITH GOOGLE',
+            style: GoogleFonts.outfit(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
+              letterSpacing: 1,
             ),
-            const SizedBox(width: 12),
-            Text(
-              'LOGIN WITH GOOGLE',
-              style: GoogleFonts.outfit(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: Colors.black87,
-                letterSpacing: 1,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

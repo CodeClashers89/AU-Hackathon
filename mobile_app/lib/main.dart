@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'screens/landing_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/citizen_home.dart';
@@ -29,33 +30,17 @@ class DPIApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        primaryColor: const Color(0xFF2563EB),
-        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+        primaryColor: const Color(0xFF0B4F87),
+        scaffoldBackgroundColor: Colors.white,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF2563EB),
+          backgroundColor: Colors.white,
           elevation: 0,
           centerTitle: true,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2563EB),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          filled: true,
-          fillColor: Colors.white,
         ),
       ),
       home: const AuthWrapper(),
       routes: {
+        '/landing': (context) => const LandingScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/citizen': (context) => const CitizenHome(),
@@ -86,10 +71,10 @@ class AuthWrapper extends StatelessWidget {
             case 'agri_officer':
               return const AgriOfficerDashboard();
             default:
-              return const LoginScreen();
+              return const LandingScreen();
           }
         }
-        return const LoginScreen();
+        return const LandingScreen();
       },
     );
   }

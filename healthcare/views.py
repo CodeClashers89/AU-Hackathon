@@ -124,63 +124,158 @@ class MedicalRecordViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def prescription_pdf(self, request, pk=None):
-        """Generate PDF for prescription"""
+        """Generate a professionally styled PDF for prescription"""
+        from reportlab.lib.colors import HexColor
+        
         medical_record = self.get_object()
         doctor = medical_record.doctor
         patient = medical_record.patient
         prescriptions = medical_record.prescriptions.all()
         
+        # Theme Colors
+        GOV_BLUE = HexColor('#0B4F87')
+        CIVIC_GREEN = HexColor('#1e8449')
+        LIGHT_GRAY = HexColor('#f8fafc')
+        
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        # Custom margins
+        doc = SimpleDocTemplate(
+            buffer, 
+            pagesize=letter,
+            rightMargin=50, leftMargin=50, topMargin=50, bottomMargin=50
+        )
         elements = []
         styles = getSampleStyleSheet()
         
-        # Header
-        elements.append(Paragraph(f"Dr. {doctor.user.get_full_name()}", styles['Heading1']))
-        elements.append(Paragraph(f"{doctor.specialization}", styles['Normal']))
-        elements.append(Paragraph(f"License: {doctor.license_number}", styles['Normal']))
-        if doctor.hospital_affiliation:
-            elements.append(Paragraph(f"{doctor.hospital_affiliation}", styles['Normal']))
+        # Custom Styles
+        title_style = ParagraphStyle(
+            'TitleStyle',
+            parent=styles['Heading1'],
+            fontSize=22,
+            textColor=GOV_BLUE,
+            spaceAfter=5
+        )
+        subtitle_style = ParagraphStyle(
+            'SubTitleStyle',
+            parent=styles['Normal'],
+            fontSize=12,
+            textColor=colors.grey,
+            spaceAfter=20
+        )
+        section_header = ParagraphStyle(
+            'SectionHeader',
+            parent=styles['Heading2'],
+            fontSize=14,
+            textColor=CIVIC_GREEN,
+            borderPadding=2,
+            spaceBefore=15,
+            spaceAfter=10
+        )
+        label_style = ParagraphStyle(
+            'LabelStyle',
+            parent=styles['Normal'],
+            fontSize=10,
+            fontName='Helvetica-Bold',
+            textColor=GOV_BLUE
+        )
+        value_style = ParagraphStyle(
+            'ValueStyle',
+            parent=styles['Normal'],
+            fontSize=10,
+            textColor=colors.black
+        )
+        
+        # Header - Doctor Info
+        header_data = [
+            [Paragraph(f"Dr. {doctor.user.get_full_name().upper()}", title_style)],
+            [Paragraph(f"{doctor.specialization} | License: {doctor.license_number}", subtitle_style)]
+        ]
+        header_table = Table(header_data, colWidths=[450])
+        header_table.setStyle(TableStyle([
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+            ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ]))
+        elements.append(header_table)
+        
+        # Horizontal Line
+        elements.append(Spacer(1, 5))
+        elements.append(Table([['']], colWidths=[500], rowHeights=[2], style=TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), GOV_BLUE),
+        ])))
         elements.append(Spacer(1, 20))
         
-        # Patient Details
-        elements.append(Paragraph(f"Patient: {patient.get_full_name()}", styles['Heading2']))
-        elements.append(Paragraph(f"Date: {medical_record.created_at.date()}", styles['Normal']))
-        elements.append(Paragraph(f"Diagnosis: {medical_record.diagnosis}", styles['Normal']))
+        # Patient & Record Info (Two columns)
+        info_data = [
+            [Paragraph("PATIENT NAME:", label_style), Paragraph(patient.get_full_name(), value_style),
+             Paragraph("RECORD DATE:", label_style), Paragraph(str(medical_record.created_at.date()), value_style)],
+            [Paragraph("PATIENT EMAIL:", label_style), Paragraph(patient.email, value_style),
+             Paragraph("RECORD ID:", label_style), Paragraph(f"#{medical_record.id:05d}", value_style)]
+        ]
+        info_table = Table(info_data, colWidths=[100, 150, 100, 150])
+        info_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ]))
+        elements.append(info_table)
+        
+        # Diagnosis
+        elements.append(Paragraph("DIAGNOSIS & CLINICAL NOTES", section_header))
+        elements.append(Paragraph(medical_record.diagnosis or "No specific diagnosis provided.", styles['Normal']))
         elements.append(Spacer(1, 20))
         
-        # Prescriptions Table
+        # Prescriptions
+        elements.append(Paragraph("PRESCRIPTION", section_header))
         if prescriptions.exists():
-            data = [['Medicine', 'Dosage', 'Frequency', 'Duration', 'Instructions']]
+            data = [[
+                Paragraph('MEDICINE', label_style), 
+                Paragraph('DOSAGE', label_style), 
+                Paragraph('FREQUENCY', label_style), 
+                Paragraph('DURATION', label_style)
+            ]]
             for rx in prescriptions:
                 data.append([
                     rx.medication_name, 
                     rx.dosage, 
                     rx.frequency, 
-                    rx.duration,
-                    rx.instructions
+                    rx.duration
                 ])
+                if rx.instructions:
+                    data.append([Paragraph(f"<i>Note: {rx.instructions}</i>", styles['Italic']), '', '', ''])
             
-            table = Table(data, colWidths=[120, 80, 80, 80, 150])
+            table = Table(data, colWidths=[180, 100, 100, 100])
             table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('BACKGROUND', (0, 0), (-1, 0), LIGHT_GRAY),
+                ('TEXTCOLOR', (0, 0), (-1, 0), GOV_BLUE),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('TOPPADDING', (0, 0), (-1, -1), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                ('LINEBELOW', (0, 0), (-1, 0), 1, GOV_BLUE),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
             ]))
             elements.append(table)
         else:
-            elements.append(Paragraph("No prescriptions.", styles['Normal']))
+            elements.append(Paragraph("<i>No medications prescribed.</i>", styles['Normal']))
             
-        elements.append(Spacer(1, 30))
-        
-        # Footer / Signature
-        elements.append(Paragraph("Doctor's Signature:", styles['Normal']))
+        # Footer / Branded Section
         elements.append(Spacer(1, 40))
-        elements.append(Paragraph("_______________________", styles['Normal']))
+        footer_line = Table([['']], colWidths=[500], rowHeights=[0.5], style=TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.lightgrey),
+        ]))
+        elements.append(footer_line)
+        elements.append(Spacer(1, 10))
+        
+        footer_data = [[
+            Paragraph("Digital Public Infrastructure - Healthcare Portal", subtitle_style),
+            Paragraph("Doctor's Digital Signature Authorized", subtitle_style)
+        ]]
+        footer_table = Table(footer_data, colWidths=[300, 200])
+        footer_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+            ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+        ]))
+        elements.append(footer_table)
         
         doc.build(elements)
         buffer.seek(0)

@@ -61,17 +61,18 @@ class PrescriptionSerializer(serializers.ModelSerializer):
 
 class MedicalRecordSerializer(serializers.ModelSerializer):
     prescriptions = PrescriptionSerializer(many=True, read_only=True)
-    doctor_name = serializers.CharField(source='doctor.user.get_full_name', read_only=True)
-    patient_name = serializers.CharField(source='patient.get_full_name', read_only=True)
-    patient_data = CustomUserSerializer(source='patient', read_only=True)
+    patient = CustomUserSerializer(read_only=True)
     patient_id = serializers.PrimaryKeyRelatedField(
         queryset=CustomUser.objects.all(), source='patient', write_only=True
     )
+    doctor_profile = DoctorSerializer(source='doctor', read_only=True)
+    doctor_name = serializers.CharField(source='doctor.user.get_full_name', read_only=True)
+    patient_name = serializers.CharField(source='patient.get_full_name', read_only=True)
     
     class Meta:
         model = MedicalRecord
         fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at', 'doctor']
 
     def create(self, validated_data):
         prescriptions_data = self.context['request'].data.get('prescriptions', [])

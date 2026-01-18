@@ -63,7 +63,7 @@ async function loadDoctorProfile() {
 }
 
 function updateProfileDisplay() {
-    if (!doctorProfile) return;
+    if (!doctorProfile || !doctorProfile.user || !doctorProfile.user.first_name || !doctorProfile.user.last_name) return;
     const initials = (doctorProfile.user.first_name[0] + doctorProfile.user.last_name[0]).toUpperCase();
     if (document.getElementById('profile-avatar')) document.getElementById('profile-avatar').textContent = initials;
     if (document.getElementById('profile-full-name')) document.getElementById('profile-full-name').textContent = `${doctorProfile.user.first_name} ${doctorProfile.user.last_name}`;
@@ -116,7 +116,7 @@ function displayTodaySchedule() {
     tbody.innerHTML = tApts.map(a => `
         <tr>
             <td>${formatTime(a.appointment_time)}</td>
-            <td>${a.patient.first_name} ${a.patient.last_name}</td>
+            <td>${a.patient_data ? `${a.patient_data.first_name} ${a.patient_data.last_name}` : (a.patient_name || 'Unknown')}</td>
             <td>${a.reason}</td>
             <td>${getStatusBadge(a.status)}</td>
             <td>
@@ -152,7 +152,10 @@ function displayAppointments() {
 
     if (s) fApts = fApts.filter(a => a.status === s);
     if (d) fApts = fApts.filter(a => a.appointment_date === d);
-    if (q) fApts = fApts.filter(a => `${a.patient.first_name} ${a.patient.last_name}`.toLowerCase().includes(q));
+    if (q) fApts = fApts.filter(a => {
+        const name = a.patient_data ? `${a.patient_data.first_name} ${a.patient_data.last_name}` : (a.patient_name || '');
+        return name.toLowerCase().includes(q);
+    });
 
     if (fApts.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:3rem; opacity:0.5;">No matching appointments found</td></tr>';
@@ -161,8 +164,8 @@ function displayAppointments() {
     tbody.innerHTML = fApts.map(a => `
         <tr>
             <td>${formatDate(a.appointment_date)} ${formatTime(a.appointment_time)}</td>
-            <td>${a.patient.first_name} ${a.patient.last_name}</td>
-            <td>${a.patient.phone_number || 'N/A'}</td>
+            <td>${a.patient_data ? `${a.patient_data.first_name} ${a.patient_data.last_name}` : (a.patient_name || 'Unknown')}</td>
+            <td>${a.patient_data ? (a.patient_data.phone_number || 'N/A') : 'N/A'}</td>
             <td>${a.reason}</td>
             <td>${getStatusBadge(a.status)}</td>
             <td>
@@ -183,12 +186,13 @@ function viewAppointment(id) {
     if (!a) return;
     const d = document.getElementById('appointment-details');
     if (d) {
+        const patient = a.patient_data || {};
         d.innerHTML = `
             <div style="margin-bottom:2rem;">
                 <h4 style="margin-bottom:1rem; color:var(--gov-blue);">SUBJECT PROFILE</h4>
-                <p><strong>Name:</strong> ${a.patient.first_name} ${a.patient.last_name}</p>
-                <p><strong>Email:</strong> ${a.patient.email}</p>
-                <p><strong>Phone:</strong> ${a.patient.phone_number || 'N/A'}</p>
+                <p><strong>Name:</strong> ${patient.first_name || 'Unknown'} ${patient.last_name || ''}</p>
+                <p><strong>Email:</strong> ${patient.email || 'N/A'}</p>
+                <p><strong>Phone:</strong> ${patient.phone_number || 'N/A'}</p>
             </div>
             <div>
                 <h4 style="margin-bottom:1rem; color:var(--gov-blue);">SESSION INTEL</h4>
@@ -212,9 +216,9 @@ async function completeAppointment(id) {
     if (!a) return;
     activeAppointmentId = id;
     const s = document.getElementById('record-patient');
-    if (s) {
-        s.innerHTML = `<option value="${a.patient.id}">${a.patient.first_name} ${a.patient.last_name}</option>`;
-        s.value = a.patient.id;
+    if (s && a.patient_data) {
+        s.innerHTML = `<option value="${a.patient_data.id}">${a.patient_data.first_name} ${a.patient_data.last_name}</option>`;
+        s.value = a.patient_data.id;
         s.disabled = true;
     }
     openModal('create-record-modal');
@@ -240,7 +244,7 @@ async function cancelAppointment(id) {
 }
 
 async function loadPatients() {
-    patients = appointments.map(a => a.patient).filter((p, i, self) => i === self.findIndex(x => x.id === p.id));
+    patients = appointments.map(a => a.patient_data).filter(p => p).filter((p, i, self) => i === self.findIndex(x => x.id === p.id));
     displayPatients();
 }
 
@@ -338,8 +342,18 @@ function displayMedicalRecords() {
 
 function openCreateRecordModal() {
     activeAppointmentId = null;
+
+    // Ensure patients are loaded from appointments
+    if (appointments.length > 0) {
+        patients = appointments.map(a => a.patient_data).filter(p => p).filter((p, i, self) => i === self.findIndex(x => x.id === p.id));
+    }
+
     const s = document.getElementById('record-patient');
     if (s) {
+        if (patients.length === 0) {
+            showNotification('No patients found. Please ensure you have appointments with patients first.', 'error');
+            return;
+        }
         s.innerHTML = '<option value="">Select Subject</option>' + patients.map(p => `<option value="${p.id}">${p.first_name} ${p.last_name}</option>`).join('');
         s.disabled = false;
     }
@@ -412,15 +426,32 @@ function setupEventListeners() {
 }
 
 async function finalizeRecord() {
+    const patientSelect = document.getElementById('record-patient');
+    const patientId = patientSelect.value;
+
+    if (!patientId) {
+        showNotification('⚠️ Please select a patient before finalizing the record.', 'error');
+        // Add visual feedback
+        patientSelect.style.borderColor = '#ef4444';
+        patientSelect.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.1)';
+        patientSelect.focus();
+        setTimeout(() => {
+            patientSelect.style.borderColor = '';
+            patientSelect.style.boxShadow = '';
+        }, 3000);
+        return;
+    }
+
     const data = {
-        patient_id: document.getElementById('record-patient').value,
+        patient_id: parseInt(patientId),
         symptoms: document.getElementById('record-symptoms').value,
         diagnosis: document.getElementById('record-diagnosis').value,
         treatment_plan: document.getElementById('record-treatment').value,
         notes: document.getElementById('record-notes').value,
-        appointment: activeAppointmentId,
+        appointment: activeAppointmentId ? parseInt(activeAppointmentId) : null,
         prescriptions: getPrescriptions()
     };
+
     try {
         const r = await fetch(`${API_BASE}/medical-records/`, {
             method: 'POST',
@@ -435,11 +466,21 @@ async function finalizeRecord() {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
             });
-            showNotification('Archive Entry Finalized', 'success');
+            showNotification('✅ Archive Entry Finalized Successfully', 'success');
             closeModal('create-record-modal');
             loadMedicalRecords(); loadAllAppointments(); updateDashboardStats();
+        } else {
+            const err = await r.json();
+            let msg = 'Entry failed';
+            if (typeof err === 'object') {
+                msg = Object.entries(err).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`).join(' | ');
+            }
+            showNotification('❌ ' + msg, 'error');
         }
-    } catch (e) { showNotification('Entry failed', 'error'); }
+    } catch (e) {
+        console.error('Finalize error:', e);
+        showNotification('❌ Network error or unexpected failure', 'error');
+    }
 }
 
 async function finalizeUnavailability() {

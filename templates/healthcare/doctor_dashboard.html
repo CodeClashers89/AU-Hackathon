@@ -609,7 +609,8 @@
         <div id="dashboard-section" class="section-content active">
             <div class="section-header">
                 <h1>Doctor Dashboard</h1>
-                <p>Welcome back, Dr.<span id="doctor-name" style="color: var(--civic-green); font-weight: 700;">{{user.get_full_name }}</span></p>
+                <p>Welcome back, Dr.<span id="doctor-name"
+                        style="color: var(--civic-green); font-weight: 700;">{{user.get_full_name }}</span></p>
             </div>
 
             <div class="stats-grid">
@@ -761,9 +762,11 @@
 
             <div class="ultra-card">
                 <div class="profile-header">
-                    <div class="profile-avatar" id="profile-avatar">{{ user.first_name.0|upper}}{{user.last_name.0|upper }}</div>
+                    <div class="profile-avatar" id="profile-avatar">{{ user.first_name.0|upper}}{{user.last_name.0|upper
+                        }}</div>
                     <div>
-                        <h2 id="profile-full-name" style="font-size: 2rem; color: var(--gov-blue);">{{user.get_full_name}}</h2>
+                        <h2 id="profile-full-name" style="font-size: 2rem; color: var(--gov-blue);">
+                            {{user.get_full_name}}</h2>
                         <p id="profile-specialization"
                             style="color: var(--civic-green); font-weight: 700; font-size: 1.1rem;">Loading...</p>
                     </div>
@@ -828,7 +831,7 @@
             </div>
             <form id="create-record-form">
                 <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
-                    <div><label>Patient</label><select id="record-patient" class="form-select" required>
+                    <div><label>Patient</label><select id="record-patient" class="form-select">
                             <option value="">Select Subject</option>
                         </select></div>
                     <div><label>Symptoms</label><textarea id="record-symptoms" class="form-textarea" rows="3"

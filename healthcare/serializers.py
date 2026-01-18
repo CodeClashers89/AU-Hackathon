@@ -6,6 +6,7 @@ from accounts.serializers import CustomUserSerializer
 
 class DoctorSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
+    full_name = serializers.CharField(source='user.get_full_name', read_only=True)
     
     class Meta:
         model = Doctor
@@ -13,7 +14,8 @@ class DoctorSerializer(serializers.ModelSerializer):
 
 class AppointmentSerializer(serializers.ModelSerializer):
     doctor_name = serializers.CharField(source='doctor.user.get_full_name', read_only=True)
-    patient = CustomUserSerializer(read_only=True)
+    patient_name = serializers.CharField(source='patient.get_full_name', read_only=True)
+    patient_data = CustomUserSerializer(source='patient', read_only=True)
     medical_record_id = serializers.SerializerMethodField()
     
     class Meta:
@@ -34,7 +36,8 @@ class PrescriptionSerializer(serializers.ModelSerializer):
 class MedicalRecordSerializer(serializers.ModelSerializer):
     prescriptions = PrescriptionSerializer(many=True, read_only=True)
     doctor_name = serializers.CharField(source='doctor.user.get_full_name', read_only=True)
-    patient = CustomUserSerializer(read_only=True)
+    patient_name = serializers.CharField(source='patient.get_full_name', read_only=True)
+    patient_data = CustomUserSerializer(source='patient', read_only=True)
     patient_id = serializers.PrimaryKeyRelatedField(
         queryset=CustomUser.objects.all(), source='patient', write_only=True
     )

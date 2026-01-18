@@ -163,7 +163,6 @@ class DashboardTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 32),
-        _buildStatCard(),
         const SizedBox(height: 32),
         _buildSectionHeader('UTILITY ACCESS GRID'),
         const SizedBox(height: 16),
@@ -207,58 +206,6 @@ class DashboardTab extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0B4F87),
-        borderRadius: BorderRadius.circular(4),
-        image: const DecorationImage(
-          image: NetworkImage('https://www.transparenttextures.com/patterns/carbon-fibre.png'),
-          opacity: 0.1,
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'SYSTEM STATUS: OPERATIONAL',
-                style: GoogleFonts.outfit(
-                  color: Colors.white.withOpacity(0.7),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              const Icon(Icons.wifi_tethering, color: Color(0xFF1E8449), size: 16),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '98.4%',
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 48,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          Text(
-            'DATA SYNC EFFICIENCY',
-            style: GoogleFonts.outfit(
-              color: Colors.white.withOpacity(0.7),
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildServiceCard(
     BuildContext context,
@@ -394,7 +341,14 @@ class _HealthcareTabState extends State<HealthcareTab> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          _doctors = data is List ? data : data['results'] ?? [];
+          final rawDoctors = data is List ? data : data['results'] ?? [];
+          // Ensure each doctor has at least a fallback name to prevent selection crashes
+          _doctors = rawDoctors.map((d) {
+            return {
+              ...d,
+              'display_name': d['full_name'] ?? d['user']?['username'] ?? 'Anonymous Doctor',
+            };
+          }).toList();
         });
       }
     } catch (e) {}
@@ -605,9 +559,9 @@ class _HealthcareTabState extends State<HealthcareTab> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildRiskIndicator('DIABETES', _predictionResult!['diabetes']),
-              _buildRiskIndicator('HEART', _predictionResult!['heart']),
-              _buildRiskIndicator('CANCER', _predictionResult!['cancer']),
+              _buildRiskIndicator('DIABETES', _predictionResult?['diabetes']),
+              _buildRiskIndicator('HEART', _predictionResult?['heart']),
+              _buildRiskIndicator('CANCER', _predictionResult?['cancer']),
             ],
           ),
           if (_predictionResult!['advice'] != null && (_predictionResult!['advice'] as List).isNotEmpty) ...[
@@ -625,7 +579,14 @@ class _HealthcareTabState extends State<HealthcareTab> {
   }
 
   Widget _buildRiskIndicator(String label, dynamic value) {
-    double risk = (value as num).toDouble();
+    double risk = 0.0;
+    if (value != null) {
+      if (value is num) {
+        risk = value.toDouble();
+      } else if (value is String) {
+        risk = double.tryParse(value) ?? 0.0;
+      }
+    }
     Color color = risk > 50 ? Colors.red : (risk > 20 ? Colors.orange : Colors.green);
     return Column(
       children: [
@@ -657,7 +618,7 @@ class _HealthcareTabState extends State<HealthcareTab> {
             _selectedDoctorId,
             _doctors.map((d) => d['id'].toString()).toList(),
             (val) => setState(() => _selectedDoctorId = val),
-            displayNames: _doctors.map((d) => d['full_name'] as String).toList(),
+            displayNames: _doctors.map((d) => d['display_name'] as String).toList(),
           ),
           const SizedBox(height: 16),
           Row(

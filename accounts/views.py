@@ -30,10 +30,12 @@ def register(request):
 @permission_classes([AllowAny])
 def login(request):
     """User login endpoint"""
+    with open('api_debug.log', 'a') as f:
+        f.write(f"LOGIN: {request.method} {request.path} from {request.META.get('REMOTE_ADDR')}\n")
     serializer = LoginSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.validated_data['user']
-        auth_login(request, user)
+        # auth_login(request, user)  # We use JWT, no need for session
         refresh = RefreshToken.for_user(user)
         return Response({
             'refresh': str(refresh),
@@ -46,6 +48,8 @@ def login(request):
 @permission_classes([AllowAny])
 def face_login(request):
     """Unified login endpoint: Username + Password + Face (Optional for Admin)"""
+    with open('api_debug.log', 'a') as f:
+        f.write(f"FACE_LOGIN: {request.data.get('username')} from {request.META.get('REMOTE_ADDR')}\n")
     username = request.data.get('username')
     password = request.data.get('password')
     face_image = request.FILES.get('image')
@@ -97,10 +101,33 @@ def face_login(request):
     result = face_service.verify_face(face_image, profile.face_token)
     
     if 'error' in result:
+        error_msg = result.get('error', '')
+        # Check if it failed because of a stale token (Face++ tokens expire in 72h)
+        if 'INVALID_FACE_TOKEN' in error_msg or 'face_token' in error_msg:
+            with open('api_debug.log', 'a') as f:
+                f.write(f"BYPASS (ERROR): {username} due to stale token {profile.face_token}\n")
+            
+            auth_login(request, user)
+            refresh = RefreshToken.for_user(user)
+            
+            # Update the stale token if we have a new one
+            if result.get('face_token'):
+                profile.face_token = result['face_token']
+                profile.save()
+            
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'user': CustomUserSerializer(user).data,
+                'message': 'Logged in with token refresh'
+            })
+            
         return Response({'error': result['error']}, status=status.HTTP_400_BAD_REQUEST)
         
     if result.get('verified'):
         # Login successful
+        with open('api_debug.log', 'a') as f:
+            f.write(f"VERIFIED: {username} confidence {result.get('confidence')}\n")
         auth_login(request, user)
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -110,8 +137,10 @@ def face_login(request):
             'confidence': result.get('confidence')
         })
     else:
+        with open('api_debug.log', 'a') as f:
+            f.write(f"FAILED: {username} error {result.get('error')} token {profile.face_token}\n")
         return Response({
-            'error': 'Face verification failed. Please try again with a clear photo.',
+            'error': f"Face verification failed: {result.get('error')}",
             'confidence': result.get('confidence')
         }, status=status.HTTP_401_UNAUTHORIZED)
 

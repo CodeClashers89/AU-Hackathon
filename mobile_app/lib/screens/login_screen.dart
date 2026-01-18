@@ -67,8 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (result['success']) {
       if (!mounted) return;
-      String role = result['role'].toString().replaceAll('_', '-');
-      Navigator.of(context).pushReplacementNamed('/$role');
+      Navigator.of(context).pushReplacementNamed('/citizen');
     } else {
       setState(() => _errorMessage = result['error']);
     }

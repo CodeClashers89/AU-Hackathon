@@ -1,0 +1,72 @@
+﻿Analyzing mobile_app...                                         
+
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\screens\citizen_home.dart:88:30 - use_build_context_synchronously
+  error - The named parameter 'subtitle' isn't defined - lib\screens\doctor_dashboard.dart:71:19 - undefined_named_parameter
+  error - The class '_AppointmentsTabState' doesn't have an unnamed constructor - lib\screens\doctor_dashboard.dart:356:43 - new_with_undefined_constructor_default
+   info - Use 'const' with the constructor to improve performance - lib\screens\doctor_dashboard.dart:463:21 - prefer_const_constructors
+  error - The named parameter 'contentPadding' isn't defined - lib\screens\doctor_dashboard.dart:575:9 - undefined_named_parameter
+  error - The named parameter 'subtitle' isn't defined - lib\screens\doctor_dashboard.dart:588:9 - undefined_named_parameter
+  error - The name of a constructor must match the name of the enclosing class - lib\screens\doctor_dashboard.dart:694:17 - invalid_constructor_name
+warning - The declaration '_AppointmentsTabState.pop' isn't referenced - lib\screens\doctor_dashboard.dart:694:27 - unused_element
+  error - The name of a constructor must match the name of the enclosing class - lib\screens\doctor_dashboard.dart:696:17 - invalid_constructor_name
+warning - The declaration '_AppointmentsTabState.of' isn't referenced - lib\screens\doctor_dashboard.dart:696:35 - unused_element
+   info - Empty constructor bodies should be written using a ';' rather than '{}' - lib\screens\doctor_dashboard.dart:696:46 - empty_constructor_bodies
+  error - A function body must be provided - lib\screens\doctor_dashboard.dart:696:46 - missing_function_body
+  error - Expected a class member - lib\screens\doctor_dashboard.dart:696:46 - expected_class_member
+  error - 'showSnackBar' must have a method body because '_AppointmentsTabState' isn't abstract - lib\screens\doctor_dashboard.dart:696:47 - concrete_class_with_abstract_member
+  error - Can't have modifier 'const' here - lib\screens\doctor_dashboard.dart:696:60 - extraneous_modifier
+  error - Function-typed parameters can't specify 'const', 'final' or 'var' in place of a return type - lib\screens\doctor_dashboard.dart:696:60 - function_typed_parameter_var
+   info - The variable name 'SnackBar' isn't a lowerCamelCase identifier - lib\screens\doctor_dashboard.dart:696:66 - non_constant_identifier_names
+   info - Use the generic function type syntax to declare the parameter 'SnackBar' - lib\screens\doctor_dashboard.dart:696:66 - use_function_type_syntax_for_parameters
+  error - Named parameters must be enclosed in curly braces ('{' and '}') - lib\screens\doctor_dashboard.dart:696:82 - named_parameter_outside_group
+  error - Using a colon as the separator before a default value is no longer supported - lib\screens\doctor_dashboard.dart:696:82 - obsolete_colon_for_default_value
+   info - Use 'const' with the constructor to improve performance - lib\screens\doctor_dashboard.dart:696:84 - prefer_const_constructors
+  error - Expected a method, getter, setter or operator declaration - lib\screens\doctor_dashboard.dart:697:16 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\screens\doctor_dashboard.dart:698:13 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\screens\doctor_dashboard.dart:698:14 - expected_executable
+   info - The variable name 'ListTile' isn't a lowerCamelCase identifier - lib\screens\doctor_dashboard.dart:699:13 - non_constant_identifier_names
+  error - Named parameters must be enclosed in curly braces ('{' and '}') - lib\screens\doctor_dashboard.dart:700:22 - named_parameter_outside_group
+  error - Using a colon as the separator before a default value is no longer supported - lib\screens\doctor_dashboard.dart:700:22 - obsolete_colon_for_default_value
+  error - Named parameters must be enclosed in curly braces ('{' and '}') - lib\screens\doctor_dashboard.dart:701:20 - named_parameter_outside_group
+  error - Using a colon as the separator before a default value is no longer supported - lib\screens\doctor_dashboard.dart:701:20 - obsolete_colon_for_default_value
+  error - The default value of an optional parameter must be constant - lib\screens\doctor_dashboard.dart:701:22 - non_constant_default_value
+  error - Named parameters must be enclosed in curly braces ('{' and '}') - lib\screens\doctor_dashboard.dart:702:20 - named_parameter_outside_group
+  error - Using a colon as the separator before a default value is no longer supported - lib\screens\doctor_dashboard.dart:702:20 - obsolete_colon_for_default_value
+  error - The default value of an optional parameter must be constant - lib\screens\doctor_dashboard.dart:702:22 - non_constant_default_value
+  error - Undefined name 'context' - lib\screens\doctor_dashboard.dart:703:31 - undefined_identifier
+  error - The function '_cancelAppointment' isn't defined - lib\screens\doctor_dashboard.dart:704:17 - undefined_function
+  error - Undefined name 'apt' - lib\screens\doctor_dashboard.dart:704:36 - undefined_identifier
+  error - A function body must be provided - lib\screens\doctor_dashboard.dart:706:14 - missing_function_body
+  error - Expected a method, getter, setter or operator declaration - lib\screens\doctor_dashboard.dart:706:14 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\screens\doctor_dashboard.dart:707:11 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\screens\doctor_dashboard.dart:707:12 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\screens\doctor_dashboard.dart:708:9 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\screens\doctor_dashboard.dart:708:10 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\screens\doctor_dashboard.dart:709:7 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\screens\doctor_dashboard.dart:709:8 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\screens\doctor_dashboard.dart:710:5 - expected_executable
+  error - Unexpected text ';' - lib\screens\doctor_dashboard.dart:710:6 - unexpected_token
+  error - Expected a method, getter, setter or operator declaration - lib\screens\doctor_dashboard.dart:711:3 - expected_executable
+  error - Expected a method, getter, setter or operator declaration - lib\screens\doctor_dashboard.dart:712:1 - expected_executable
+  error - The named parameter 'contentPadding' isn't defined - lib\screens\doctor_dashboard.dart:832:9 - undefined_named_parameter
+  error - The named parameter 'subtitle' isn't defined - lib\screens\doctor_dashboard.dart:837:9 - undefined_named_parameter
+
+flutter : 50 issues 
+found. (ran in 3.3s)
+At line:1 char:1
++ flutter analyze 
+--no-pub 2>&1 | 
+Out-File -FilePath 
+analysis_errors_ut ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (50 issues    
+ found. (ran in 3.    
+3s):String) [], R    
+emoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 

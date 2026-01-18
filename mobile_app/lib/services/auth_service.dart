@@ -6,9 +6,9 @@ import 'package:http_parser/http_parser.dart';
 
 class AuthService extends ChangeNotifier {
   // IMPORTANT: For physical device testing, use your computer's local IP address
-  // Your WiFi IP: 120.120.122.113
+  // Your WiFi IP: 10.167.110.93
   // Make sure your Android device is connected to the same WiFi network
-  final String baseUrl = 'http://120.120.122.113:8000/api';
+  final String baseUrl = 'http://10.167.110.93:8000/api';
   
   String? _accessToken;
   String? _refreshToken;
@@ -40,6 +40,7 @@ class AuthService extends ChangeNotifier {
       if (faceImageBytes != null) {
         // Face login for non-admins
         var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/accounts/login/face/'));
+        request.headers['Accept'] = 'application/json';
         request.fields['username'] = username;
         request.fields['password'] = password;
         request.files.add(http.MultipartFile.fromBytes(
@@ -53,17 +54,28 @@ class AuthService extends ChangeNotifier {
         var response = await http.Response.fromStream(streamedResponse);
 
         if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          return await _handleLoginSuccess(data);
+          try {
+            final data = json.decode(response.body);
+            return await _handleLoginSuccess(data);
+          } catch (e) {
+            return {'success': false, 'error': 'Invalid JSON response from server'};
+          }
         } else {
-          final error = json.decode(response.body);
-          return {'success': false, 'error': error['error'] ?? 'Login failed'};
+          try {
+            final error = json.decode(response.body);
+            return {'success': false, 'error': error['error'] ?? error['detail'] ?? 'Login failed'};
+          } catch (e) {
+            return {'success': false, 'error': 'Server Error (${response.statusCode}): ${response.body.length > 50 ? response.body.substring(0, 50) + "..." : response.body}'};
+          }
         }
       } else {
         // Standard login (or admin bypass)
         final response = await http.post(
           Uri.parse('$baseUrl/accounts/login/'),
-          headers: {'Content-Type': 'application/json'},
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
           body: json.encode({
             'username': username,
             'password': password,
@@ -71,11 +83,19 @@ class AuthService extends ChangeNotifier {
         );
 
         if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          return await _handleLoginSuccess(data);
+          try {
+            final data = json.decode(response.body);
+            return await _handleLoginSuccess(data);
+          } catch (e) {
+            return {'success': false, 'error': 'Invalid JSON response'};
+          }
         } else {
-          final error = json.decode(response.body);
-          return {'success': false, 'error': error['detail'] ?? error['error'] ?? 'Login failed'};
+          try {
+            final error = json.decode(response.body);
+            return {'success': false, 'error': error['detail'] ?? error['error'] ?? 'Login failed'};
+          } catch (e) {
+            return {'success': false, 'error': 'Server Error (${response.statusCode}): ${response.body.length > 50 ? response.body.substring(0, 50) + "..." : response.body}'};
+          }
         }
       }
     } catch (e) {
@@ -172,6 +192,23 @@ class AuthService extends ChangeNotifier {
   Future<http.Response> post(String endpoint, Map<String, dynamic> data) async {
     final headers = await getHeaders();
     return await http.post(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: headers,
+      body: json.encode(data),
+    );
+  }
+
+  Future<http.Response> delete(String endpoint) async {
+    final headers = await getHeaders();
+    return await http.delete(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: headers,
+    );
+  }
+
+  Future<http.Response> patch(String endpoint, Map<String, dynamic> data) async {
+    final headers = await getHeaders();
+    return await http.patch(
       Uri.parse('$baseUrl$endpoint'),
       headers: headers,
       body: json.encode(data),

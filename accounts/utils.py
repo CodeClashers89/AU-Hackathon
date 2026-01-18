@@ -96,6 +96,22 @@ class FacePPService:
         faces = detect_result.get('faces', [])
         if faces:
             face_token = faces[0].get('face_token')
+            
+            # Add face to permanent faceset to prevent expiration (72h limit)
+            if hasattr(settings, 'FACEPP_FACESET_TOKEN') and settings.FACEPP_FACESET_TOKEN:
+                try:
+                    url = f"{self.api_url}/faceset/addface"
+                    data = {
+                        'api_key': self.api_key,
+                        'api_secret': self.api_secret,
+                        'faceset_token': settings.FACEPP_FACESET_TOKEN,
+                        'face_tokens': face_token
+                    }
+                    add_response = requests.post(url, data=data, timeout=10)
+                    logger.info(f"Added face {face_token} to faceset: {add_response.json()}")
+                except Exception as e:
+                    logger.error(f"Failed to add face to faceset: {e}")
+
             return {'face_token': face_token}
         
         return {'error': 'Failed to extract face token from the response.'}
@@ -160,6 +176,8 @@ class FacePPService:
         try:
             # Compare the two faces
             url = f"{self.api_url}/compare"
+            print(f"DEBUG: Comparing face_token1 (stored): {stored_face_token}")
+            print(f"DEBUG: Comparing face_token2 (new): {new_face_token}")
             data = {
                 'api_key': self.api_key,
                 'api_secret': self.api_secret,
@@ -180,7 +198,8 @@ class FacePPService:
             return {
                 'verified': confidence > threshold,
                 'confidence': confidence,
-                'threshold': threshold
+                'threshold': threshold,
+                'face_token': new_face_token
             }
             
         except requests.exceptions.Timeout:

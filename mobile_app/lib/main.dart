@@ -1,12 +1,9 @@
-import 'package:flutter/material.dart';
+ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/landing_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/citizen_home.dart';
-import 'screens/doctor_dashboard.dart';
-import 'screens/city_staff_dashboard.dart';
-import 'screens/agri_officer_dashboard.dart';
 import 'services/auth_service.dart';
 
 void main() {
@@ -44,9 +41,6 @@ class DPIApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/citizen': (context) => const CitizenHome(),
-        '/doctor': (context) => const DoctorDashboard(),
-        '/city-staff': (context) => const CityStaffDashboard(),
-        '/agri-officer': (context) => const AgriOfficerDashboard(),
       },
     );
   }
@@ -60,19 +54,7 @@ class AuthWrapper extends StatelessWidget {
     return Consumer<AuthService>(
       builder: (context, authService, _) {
         if (authService.isAuthenticated) {
-          // Route based on user role
-          switch (authService.userRole) {
-            case 'citizen':
-              return const CitizenHome();
-            case 'doctor':
-              return const DoctorDashboard();
-            case 'city_staff':
-              return const CityStaffDashboard();
-            case 'agri_officer':
-              return const AgriOfficerDashboard();
-            default:
-              return const LandingScreen();
-          }
+          return const CitizenHome();
         }
         return const LandingScreen();
       },

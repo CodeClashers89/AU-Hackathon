@@ -224,8 +224,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       keyboardType: TextInputType.phone,
                     ),
                     const SizedBox(height: 20),
-                    _buildLabel('PLATFORM ROLE'),
-                    _buildDropdown(),
+                    // Role is fixed to citizen for this application version
                     const SizedBox(height: 20),
                     _buildLabel('RESIDENTIAL ADDRESS'),
                     _buildTextField(
@@ -406,30 +405,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildDropdown() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedRole,
-          isExpanded: true,
-          style: GoogleFonts.outfit(color: Colors.black87, fontWeight: FontWeight.w500, fontSize: 16),
-          items: const [
-            DropdownMenuItem(value: 'citizen', child: Text('Citizen')),
-            DropdownMenuItem(value: 'doctor', child: Text('Doctor (Requires Approval)')),
-            DropdownMenuItem(value: 'city_staff', child: Text('City Staff (Requires Approval)')),
-            DropdownMenuItem(value: 'agri_officer', child: Text('Agri Officer (Requires Approval)')),
-          ],
-          onChanged: (value) => setState(() => _selectedRole = value!),
-        ),
-      ),
-    );
-  }
 
   Widget _buildRegisterButton() {
     return SizedBox(

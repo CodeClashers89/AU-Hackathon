@@ -1,0 +1,24 @@
+﻿Analyzing mobile_app...                                         
+
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\screens\citizen_home.dart:88:30 - use_build_context_synchronously
+   info - Use 'const' with the constructor to improve performance - lib\screens\doctor_dashboard.dart:463:21 - prefer_const_constructors
+
+flutter : 2 issues 
+found. (ran in 3.8s)
+At line:1 char:1
++ flutter analyze 
+--no-pub 2>&1 | 
+Out-File -FilePath 
+final_analysis.txt ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (2 issues f   
+ ound. (ran in 3.8    
+s):String) [], Re    
+moteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 

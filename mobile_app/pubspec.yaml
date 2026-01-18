@@ -23,12 +23,17 @@ dependencies:
   # HTTP & API
   http: ^1.1.0
   dio: ^5.3.3
-  
+  http_parser: ^4.0.2
+
   # Local Storage
   shared_preferences: ^2.2.2
+
+  # Media
+  image_picker: ^1.0.4
   
   # UI Enhancements
   cached_network_image: ^3.3.0
+  google_fonts: ^6.1.0
   
   # Date & Time
   intl: ^0.18.1

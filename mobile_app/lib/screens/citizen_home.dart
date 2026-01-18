@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import 'dart:convert';
 
@@ -25,31 +26,47 @@ class _CitizenHomeState extends State<CitizenHome> {
     final authService = Provider.of<AuthService>(context);
     
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Citizen Portal'),
+        title: Text(
+          'DPI CITIZEN TERMINAL',
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+            letterSpacing: 1.5,
+            color: const Color(0xFF0B4F87),
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              // TODO: Show notifications
-            },
+            icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF0B4F87)),
+            onPressed: () {},
           ),
           PopupMenuButton<String>(
+            icon: const Icon(Icons.account_circle_outlined, color: Color(0xFF0B4F87)),
             itemBuilder: (context) => <PopupMenuEntry<String>>[
               PopupMenuItem<String>(
                 enabled: false,
                 child: ListTile(
-                  leading: const Icon(Icons.person),
-                  title: Text(authService.username ?? 'User'),
-                  subtitle: const Text('Citizen'),
+                  leading: const Icon(Icons.person, color: Color(0xFF0B4F87)),
+                  title: Text(
+                    authService.username ?? 'User',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.w700),
+                  ),
+                  subtitle: Text(
+                    'Citizen ID Verified',
+                    style: GoogleFonts.outfit(fontSize: 12, color: const Color(0xFF1E8449)),
+                  ),
                 ),
               ),
               const PopupMenuDivider(),
               PopupMenuItem<String>(
                 value: 'logout',
-                child: const ListTile(
-                  leading: Icon(Icons.logout),
-                  title: Text('Logout'),
+                child: ListTile(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: Text('Logout', style: GoogleFonts.outfit(color: Colors.red)),
                 ),
               ),
             ],
@@ -64,29 +81,43 @@ class _CitizenHomeState extends State<CitizenHome> {
         ],
       ),
       body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF2563EB),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_hospital),
-            label: 'Healthcare',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.agriculture),
-            label: 'Agriculture',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.location_city),
-            label: 'City Services',
-          ),
-        ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: Colors.grey.shade100, width: 1)),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: (index) => setState(() => _selectedIndex = index),
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.white,
+          selectedItemColor: const Color(0xFF0B4F87),
+          unselectedItemColor: Colors.grey.shade400,
+          selectedLabelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 11),
+          unselectedLabelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 11),
+          elevation: 0,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard_outlined),
+              activeIcon: Icon(Icons.dashboard),
+              label: 'DASHBOARD',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.monitor_heart_outlined),
+              activeIcon: Icon(Icons.monitor_heart),
+              label: 'HEALTHCARE',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.agriculture_outlined),
+              activeIcon: Icon(Icons.agriculture),
+              label: 'AGRI DATA',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.location_city_outlined),
+              activeIcon: Icon(Icons.location_city),
+              label: 'CIVIC HUB',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -98,40 +129,122 @@ class DashboardTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       children: [
-        const Text(
-          'Welcome to Seva Setu',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        Text(
+          'WELCOME BACK',
+          style: GoogleFonts.outfit(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 2,
+            color: const Color(0xFF0B4F87).withOpacity(0.5),
+          ),
         ),
+        const SizedBox(height: 8),
+        Text(
+          'CITIZEN SERVICES',
+          style: GoogleFonts.outfit(
+            fontSize: 32,
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF0B4F87),
+            letterSpacing: 1,
+          ),
+        ),
+        const SizedBox(height: 32),
+        _buildStatCard(),
+        const SizedBox(height: 32),
+        _buildSectionHeader('UTILITY ACCESS GRID'),
         const SizedBox(height: 16),
         _buildServiceCard(
           context,
-          'Healthcare Services',
-          'Book appointments, view medical records',
-          Icons.local_hospital,
-          Colors.blue,
-          () => Navigator.pushNamed(context, '/healthcare'),
+          'HEALTHCARE TERMINAL',
+          'Deploy appointments & health records',
+          Icons.medication_outlined,
+          const Color(0xFF0B4F87),
+          () {},
         ),
-        const SizedBox(height: 12),
         _buildServiceCard(
           context,
-          'Agriculture Advisory',
-          'Get farming tips and market updates',
-          Icons.agriculture,
-          Colors.green,
-          () => Navigator.pushNamed(context, '/agriculture'),
+          'AGRICULTURAL ADVISORY',
+          'Access crop yields & market data',
+          Icons.eco_outlined,
+          const Color(0xFF1E8449),
+          () {},
         ),
-        const SizedBox(height: 12),
         _buildServiceCard(
           context,
-          'City Services',
-          'Report complaints and track status',
-          Icons.location_city,
-          Colors.orange,
-          () => Navigator.pushNamed(context, '/city-services'),
+          'CITY SERVICE HUB',
+          'Coordinate complaints & resolutions',
+          Icons.account_balance_outlined,
+          const Color(0xFFD68910),
+          () {},
         ),
       ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: GoogleFonts.outfit(
+        fontSize: 12,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.5,
+        color: Colors.grey.shade400,
+      ),
+    );
+  }
+
+  Widget _buildStatCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0B4F87),
+        borderRadius: BorderRadius.circular(4),
+        image: const DecorationImage(
+          image: NetworkImage('https://www.transparenttextures.com/patterns/carbon-fibre.png'),
+          opacity: 0.1,
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'SYSTEM STATUS: OPERATIONAL',
+                style: GoogleFonts.outfit(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              const Icon(Icons.wifi_tethering, color: Color(0xFF1E8449), size: 16),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '98.4%',
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 48,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(
+            'DATA SYNC EFFICIENCY',
+            style: GoogleFonts.outfit(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -140,23 +253,64 @@ class DashboardTab extends StatelessWidget {
     String title,
     String subtitle,
     IconData icon,
-    Color color,
+    Color accentColor,
     VoidCallback onTap,
   ) {
-    return Card(
-      elevation: 2,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: color.withOpacity(0.1),
-          child: Icon(icon, color: color),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey.shade100, width: 1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(4),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: accentColor.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Icon(icon, color: accentColor, size: 28),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.outfit(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF0B4F87),
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.outfit(
+                          fontSize: 13,
+                          color: Colors.grey.shade500,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300),
+              ],
+            ),
+          ),
         ),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: onTap,
       ),
     );
   }

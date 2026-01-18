@@ -1,7 +1,7 @@
-# Digital Public Infrastructure (DPI) Platform
+# Seva Setu
 
 ## Project Overview
-The **Digital Public Infrastructure (DPI)** platform is a unified government service portal designed to provide citizens with seamless access to essential services like Healthcare, Agriculture, and City Management. Built with a modular architecture, it features a robust Django backend and a modern Flutter mobile application, enabling secure data exchange and real-time service tracking for citizens, service providers, and government administrators.
+The **Seva Setu** platform is a unified government service portal designed to provide citizens with seamless access to essential services like Healthcare, Agriculture, and City Management. Built with a modular architecture, it features a robust Django backend and a modern Flutter mobile application, enabling secure data exchange and real-time service tracking for citizens, service providers, and government administrators.
 
 
 ## Key Features
@@ -13,7 +13,7 @@ The **Digital Public Infrastructure (DPI)** platform is a unified government ser
 - **Advanced Admin Analytics**: Comprehensive dashboard for system health monitoring and service performance metrics.
 
 ## AI & Machine Learning Capabilities
-The DPI platform leverages state-of-the-art AI and ML to empower citizens:
+The Seva Setu platform leverages state-of-the-art AI and ML to empower citizens:
 - **Predictive Healthcare**: Built-in specialized ML models (Diabetes, Heart Disease, and Cancer) to assess health risks based on patient demographics and clinical parameters.
 - **Smart Agriculture**: Data-driven crop recommendation engine and yield level predictors based on soil type, rainfall, and location.
 - **Intelligent City Services**: Integrated **OpenAI GPT-4o-mini** to automatically analyze and prioritize municipal complaints based on public safety impact and urgency.

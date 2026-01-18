@@ -194,12 +194,19 @@ async function loadDoctors() {
                     name = doctor.full_name;
                 }
 
+                // Remove "Dr." or "Dr " from the start if present to avoid duplication
+                name = name.replace(/^Dr\.?\s+/i, '');
+
                 option.textContent = `Dr. ${name} - ${doctor.specialization || 'General'}`;
                 select.appendChild(option);
             });
         }
     } catch (error) {
         console.error('Failed to load doctors:', error);
+        const select = document.getElementById('doctor-select');
+        if (select) {
+            select.innerHTML = '<option value="">Failed to load doctors</option>';
+        }
     }
 }
 

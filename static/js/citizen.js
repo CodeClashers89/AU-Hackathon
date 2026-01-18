@@ -163,17 +163,21 @@ async function cancelAppointment(appointmentId) {
             await apiCall(`/healthcare/appointments/${appointmentId}/`, 'DELETE', null, true);
             showNotification('Appointment cancelled successfully', 'success');
         } catch (error) {
-            // If it's a 404, it means it's already deleted/doesn't exist. Treat as success.
-            if (error.message && error.message.includes('No Appointment matches') || error.message.includes('Not found')) {
+            console.warn('Cancellation error:', error);
+            // If it's a 404 (Not found) or similar, it means it's already deleted. Treat as success.
+            const msg = error.message || '';
+            if (msg.includes('No Appointment matches') || msg.includes('Not found') || msg.includes('not found')) {
                 showNotification('Appointment cancelled successfully', 'success');
             } else {
                 throw error;
             }
         }
+        // Always refresh the list
         await loadAppointments();
         updateActivityCounts();
     } catch (error) {
-        showNotification(error.message || 'Failed to cancel appointment', 'error');
+        console.error('Final cancellation error:', error);
+        showNotification(error.message || 'Failed to cancel appointment. Please try again.', 'error');
     } finally {
         hideLoading();
     }

@@ -52,14 +52,11 @@ function loadSectionData(sec) {
 // Data Fetching & Display
 async function loadDoctorProfile() {
     try {
-        const r = await fetch(`${API_BASE}/doctors/`, {
+        const r = await fetch(`${API_BASE}/doctors/me/`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
         });
         if (r.ok) {
-            const d = await r.json();
-            const list = d.results || d;
-            // Use the global CURRENT_USER_ID defined in the HTML
-            doctorProfile = list.find(x => x.user.id === CURRENT_USER_ID) || list[0];
+            doctorProfile = await r.json();
             updateProfileDisplay();
         }
     } catch (e) { console.error('Profile fetch failed:', e); }

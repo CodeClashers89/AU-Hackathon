@@ -36,6 +36,16 @@ class DoctorViewSet(viewsets.ModelViewSet):
         doctors = Doctor.objects.filter(is_available=True, user__is_approved=True)
         serializer = self.get_serializer(doctors, many=True)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def me(self, request):
+        """Get current doctor's profile"""
+        try:
+            doctor = Doctor.objects.get(user=request.user)
+            serializer = self.get_serializer(doctor)
+            return Response(serializer.data)
+        except Doctor.DoesNotExist:
+            return Response({'error': 'Doctor profile not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class AppointmentViewSet(viewsets.ModelViewSet):
     """Appointment management"""
